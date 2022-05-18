@@ -1,4 +1,4 @@
-from jord.gdal_utilities import GDAL
+from jord.gdal_utilities.importing import GDAL
 from enum import Enum
 
 

@@ -1,7 +1,8 @@
 from pathlib import Path
 from typing import List
 
-from jord.gdal_utilities import GDAL, OSR, GdalAccessEnum
+from jord.gdal_utilities.enums import GdalAccessEnum
+from jord.gdal_utilities.importing import GDAL, OSR
 
 
 # __all__ = ['get_gcps_from_file']
