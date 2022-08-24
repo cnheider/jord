@@ -149,17 +149,12 @@ logs/*.csv
 .externalNativeBuild
 .ipynb_checkpoints/
 
-*[Bb]uild/*
-*.out
-.cxx
 
 *~develop
 *~HEAD
 
 *~develop_*
 *~HEAD_*
-
-
 
 
 .dccache
