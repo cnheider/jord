@@ -14,6 +14,7 @@ __all__ = [
 ]
 
 from logging import warning
+from typing import Mapping, Optional
 
 from qgis.core import QgsProject
 
@@ -22,9 +23,11 @@ from jord import PROJECT_NAME
 qgis_project = QgsProject.instance()
 
 
-def restore_default_project_settings(defaults={}, *, project_name=PROJECT_NAME):
+def restore_default_project_settings(defaults:Optional[Mapping] = None, *, project_name=PROJECT_NAME):
+    if defaults is None:
+        defaults = {}
     for key, value in defaults.items():
-        store_project_setting(key, value, project_name=PROJECT_NAME)
+        store_project_setting(key, value, project_name=project_name)
 
 
 def store_project_setting(key, value, *, project_name=PROJECT_NAME):
@@ -34,7 +37,7 @@ def store_project_setting(key, value, *, project_name=PROJECT_NAME):
     elif isinstance(value, float):
         qgis_project.writeEntryDouble(project_name, key, value)
     # elif isinstance(value, int): # DOES NOT EXIST!
-    #    qgis_project.writeEntryNum(PROJECT_NAME, key, value)
+    #    qgis_project.writeEntryNum(project_name, key, value)
     else:
         value = str(value)
         qgis_project.writeEntry(project_name, key, value)
