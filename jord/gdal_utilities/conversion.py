@@ -13,8 +13,13 @@ from typing import List
 from jord.gdal_utilities.enums import GdalAccessEnum
 from jord.gdal_utilities.importing import GDAL, OSR
 
-
-# __all__ = ['get_gcps_from_file']
+__all__ = [
+    "get_georeference_from_file",
+    "set_georeference_to_file",
+    "geotiff_to_tiff",
+    "tiff_to_geotiff",
+    "copy_gcps_to_file",
+]
 
 
 def get_georeference_from_file(file: Path) -> List[GDAL.GCP]:

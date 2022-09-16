@@ -1,6 +1,15 @@
-from qgis.PyQt import QtGui
-from qgis.PyQt import QtWidgets
-from typing import List, Tuple
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+__author__ = "Christian Heider Nielsen"
+__doc__ = r"""
+
+           Created on 02-12-2020
+           """
+
+from typing import Tuple
+
+from qgis.PyQt import QtGui, QtWidgets
 
 __all__ = ["dialog_progress_bar"]
 

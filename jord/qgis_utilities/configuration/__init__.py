@@ -7,5 +7,5 @@ __doc__ = r"""
            Created on 5/5/22
            """
 
-from .project_settings import *
 from .plugin_settings import *
+from .project_settings import *

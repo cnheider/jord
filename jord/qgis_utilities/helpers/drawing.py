@@ -1,7 +1,16 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+__author__ = "Christian Heider Nielsen"
+__doc__ = r"""
+
+           Created on 02-12-2020
+           """
+
 from qgis.PyQt import QtGui
 from qgis.PyQt.QtCore import Qt
 from qgis.core import QgsWkbTypes
-from qgis.gui import QgsRubberBand, QgsMapCanvas
+from qgis.gui import QgsMapCanvas, QgsRubberBand
 
 __all__ = ["make_rubber_band"]
 

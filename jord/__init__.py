@@ -15,7 +15,7 @@ __version__ = "0.0.4"
 __doc__ = r"""
 .. module:: jord
    :platform: Unix, Windows
-   :synopsis: A set of general tools build for .
+   :synopsis: A set of general tools build for geo data.
 
 .. moduleauthor:: Christian Heider Nielsen <christian.heider@alexandra.dk>
 

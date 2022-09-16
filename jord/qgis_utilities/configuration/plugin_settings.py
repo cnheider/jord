@@ -1,3 +1,12 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+__author__ = "Christian Heider Nielsen"
+__doc__ = r"""
+
+           Created on 02-12-2020
+           """
+
 __all__ = ["store_plugin_setting", "read_plugin_setting"]
 
 from qgis.core import QgsSettings

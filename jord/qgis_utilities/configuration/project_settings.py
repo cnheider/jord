@@ -23,7 +23,9 @@ from jord import PROJECT_NAME
 qgis_project = QgsProject.instance()
 
 
-def restore_default_project_settings(defaults:Optional[Mapping] = None, *, project_name=PROJECT_NAME):
+def restore_default_project_settings(
+    defaults: Optional[Mapping] = None, *, project_name=PROJECT_NAME
+):
     if defaults is None:
         defaults = {}
     for key, value in defaults.items():

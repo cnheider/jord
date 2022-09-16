@@ -1,11 +1,16 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+__author__ = "Christian Heider Nielsen"
+__doc__ = r"""
+
+           Created on 02-12-2020
+           """
+
 import time
 
-import numpy
-from qgis.PyQt import QtGui, QtWidgets, uic
-from qgis.PyQt.QtCore import pyqtSignal, Qt
-from qgis.core import QgsGeometry
-from qgis.core import QgsVectorLayer, QgsCoordinateReferenceSystem, QgsProject
-
+from qgis.PyQt import QtGui
+from qgis.PyQt.QtCore import Qt
 
 __all__ = ["qt_draw_timestamp"]
 
