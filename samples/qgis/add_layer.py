@@ -1,5 +1,13 @@
-from qgis.core import QgsMapLayerRegistry
-from qgis.core import QgsVectorLayer, QgsRasterLayer
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+__author__ = "Christian Heider Nielsen"
+__doc__ = r"""
+
+           Created on 02-12-2020
+           """
+
+from qgis.core import QgsMapLayerRegistry, QgsRasterLayer
 
 from jord.qgis_utilities import read_project_setting
 
