@@ -7,6 +7,17 @@ __doc__ = r"""
            Created on 5/5/22
            """
 
+
+from pathlib import Path
+
+with open(Path(__file__).parent / "README.md", "r") as this_init_file:
+    __doc__ += this_init_file.read()
+
+try:
+  import qgis
+except ImportError:
+  raise ImportError("qgis is not installed")
+
 from .configuration import *
 from .helpers import *
 from .numpy_utilities import *
