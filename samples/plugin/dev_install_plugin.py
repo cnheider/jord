@@ -11,7 +11,6 @@ if is_windows():
 else:
     b = qgis_app.user_data
 
-
 source_folder = Path(__file__).parent.absolute()
 target_folder = (
     b / "profiles" / default_profile / "python" / "plugins" / source_folder.stem

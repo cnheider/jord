@@ -3,7 +3,6 @@
 
 import datetime
 import os
-from pathlib import Path
 from warnings import warn
 
 import pkg_resources

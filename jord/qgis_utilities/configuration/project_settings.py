@@ -14,7 +14,7 @@ __all__ = [
 ]
 
 from logging import warning
-from typing import Mapping, Optional
+from typing import Any, Mapping, Optional
 
 from qgis.core import QgsProject
 
@@ -24,7 +24,7 @@ qgis_project = QgsProject.instance()
 
 
 def restore_default_project_settings(
-    defaults: Optional[Mapping] = None, *, project_name=PROJECT_NAME
+    defaults: Optional[Mapping] = None, *, project_name: str = PROJECT_NAME
 ):
     if defaults is None:
         defaults = {}
@@ -32,7 +32,7 @@ def restore_default_project_settings(
         store_project_setting(key, value, project_name=project_name)
 
 
-def store_project_setting(key, value, *, project_name=PROJECT_NAME):
+def store_project_setting(key: str, value: Any, *, project_name: str = PROJECT_NAME):
 
     if isinstance(value, bool):
         qgis_project.writeEntryBool(project_name, key, value)
@@ -48,12 +48,19 @@ def store_project_setting(key, value, *, project_name=PROJECT_NAME):
 
 
 def read_project_setting(
-    key, type_hint=None, *, defaults={}, project_name=PROJECT_NAME
+    key: str,
+    type_hint: type = None,
+    *,
+    defaults: Mapping = None,
+    project_name: str = PROJECT_NAME,
 ):
     # read values (returns a tuple with the value, and a status boolean
     # which communicates whether the value retrieved could be converted to
     # its type, in these cases a string, an integer, a double and a boolean
     # respectively)
+
+    if defaults is None:
+        defaults = {}
 
     if type_hint is not None:
         if type_hint is bool:
