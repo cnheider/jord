@@ -8,11 +8,17 @@ __doc__ = r"""
            """
 
 import cgi
+import subprocess
 from pathlib import Path
 
 __all__ = ["install_requirements_from_file", "install_requirements_from_name"]
 
 from typing import Iterable, Tuple
+
+from subprocess import check_output
+import sys
+
+SP_CALLABLE = subprocess.check_call  # subprocess.call
 
 
 def install_requirements_from_file(requirements_path: Path) -> None:
@@ -34,14 +40,12 @@ def install_requirements_from_file(requirements_path: Path) -> None:
         pip.main(args)
 
     elif False:
-        from subprocess import call
 
-        call(["pip"] + args)
+        SP_CALLABLE(["pip"] + args)
 
     elif True:
-        from subprocess import call
 
-        call(["python", "-m", "pip"] + args)
+        SP_CALLABLE(["python", "-m", "pip"] + args)
 
 
 def is_requirement_installed(requirement_name: str) -> bool:
@@ -153,7 +157,7 @@ def install_requirements_from_name(*requirements_name: Iterable[str]) -> None:
     # if isinstance(requirements_name, Iterable) and len(requirements_name)==1:
     # ... # handle wrong input format
 
-    args = ["install", *requirements_name, "--upgrade"]
+    args = ["install", "-U", *requirements_name]
     # args = ["install", "rasterio", "--upgrade"] # RASTERIO for window DOES NOT WORK ATM, should be installed manually
 
     if False:
@@ -162,16 +166,13 @@ def install_requirements_from_name(*requirements_name: Iterable[str]) -> None:
         pip.main(args)
 
     elif False:
-        from subprocess import call
 
-        call(["pip"] + args)
-
+        SP_CALLABLE(["pip"] + args)
+    # subprocess.check_call([sys.executable, '-m', 'conda', 'install', '<packagename>'])
     elif True:
-        from subprocess import call
-        import sys
 
-        interpreter = Path(sys.executable)
-        call([str(interpreter), "-m", "pip"] + args)
+        interpreter = Path(sys.executable).absolute()
+        SP_CALLABLE([str(interpreter), "-m", "pip"] + args)
 
 
 def remove_requirements_from_name(*requirements_name: Iterable[str]) -> None:
@@ -181,25 +182,32 @@ def remove_requirements_from_name(*requirements_name: Iterable[str]) -> None:
     Repeat args let you choose how many time to try uninstall the packages.
     """
     num_repeat: int = 1
+    args = ["uninstall", "-y", *requirements_name]
+
     for _ in range(num_repeat):
-        args = ["uninstall", *requirements_name, "-y"]
-        print(args)
+
         if False:
             import pip
 
             pip.main(args)
 
         elif False:
-            from subprocess import call
 
-            call(["pip"] + args)
+            SP_CALLABLE(["pip"] + args)
 
         elif True:
-            from subprocess import call
-            import sys
 
-            interpreter = Path(sys.executable)
-            call([str(interpreter), "-m", "pip"] + args)  # figure out which python!
+            interpreter = Path(sys.executable).absolute()
+            SP_CALLABLE(
+                [str(interpreter), "-m", "pip"] + args
+            )  # figure out which python!
+
+            for r in requirements_name:  # assuming no name aliasing
+                del requirements_name  # unload now deleted modules
+
+            reqs = check_output([sys.executable, "-m", "pip", "freeze"])
+            # installed_packages = [r.decode().split('==')[0] for r in reqs.split()]
+            # print(installed_packages)
 
 
 if __name__ == "__main__":

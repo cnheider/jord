@@ -7,9 +7,7 @@ dependencies:
   - python=3.8
   - pip>=18.0
   - conda>=4.5.9
-  - pytorch
-  - torchvision
-  - torchaudio
-  - cudatoolkit=11.3
+  - pip
   - pip:
       - devpack
+      - -r requirements.txt

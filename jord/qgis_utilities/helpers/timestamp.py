@@ -8,21 +8,24 @@ __doc__ = r"""
            """
 
 import time
+from typing import Any
 
 from qgis.PyQt import QtGui
 from qgis.PyQt.QtCore import Qt
 
 __all__ = ["qt_draw_timestamp"]
 
+from warg import Triple
+
 
 def qt_draw_timestamp(
-    image,
-    font_size=10,
-    font_color=(255, 255, 255),
-    font_family="Arial",
-    font_style=QtGui.QFont.StyleNormal,
-    font_weight=QtGui.QFont.Normal,
-):
+    image: Any,  # QtImage
+    font_size: int = 10,
+    font_color: Triple = (255, 255, 255),
+    font_family: str = "Arial",
+    font_style: int = QtGui.QFont.StyleNormal,
+    font_weight: int = QtGui.QFont.Normal,
+) -> None:
     timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
     font = QtGui.QFont(font_family, font_size, font_style, font_weight)
     font.setPixelSize(font_size)
