@@ -9,38 +9,36 @@ __doc__ = r"""
 
 __all__ = ["import_gdal", "import_osr", "GDAL", "OSR"]
 
+from types import ModuleType
 
-def import_gdal():
-    """
 
-    :return:
-    :rtype:
-    """
+def import_gdal() -> ModuleType:
     try:
         import gdal
-    except ImportError:
+
+    except (ImportError, ModuleNotFoundError) as e:
         try:
             from osgeo import gdal
-        except:
-            raise ImportError("gdal is not installed")
+        except Exception as e2:
+            raise ImportError(f"gdal is not installed {type(e), e, type(e2), e2}")
+
     gdal.UseExceptions()
+
     return gdal
 
 
-def import_osr():
-    """
-
-    :return:
-    :rtype:
-    """
+def import_osr() -> ModuleType:
     try:
         import ors
-    except ImportError:
+
+    except (ImportError, ModuleNotFoundError) as e:
         try:
             from osgeo import osr
-        except:
-            raise ImportError("osr is not installed")
+        except Exception as e2:
+            raise ImportError(f"osr is not installed {type(e), e, type(e2), e2}")
+
     osr.UseExceptions()
+
     return osr
 
 

@@ -24,7 +24,7 @@ def store_plugin_setting(key: str, value: Any) -> None:
 
 
 def read_plugin_setting(
-    key: str, type_hint: Optional[Type] = None, *, default_value=None
+    key: str, type_hint: Optional[Type] = None, *, default_value: Any = None
 ) -> object:
     """ """
     if type_hint is None:
