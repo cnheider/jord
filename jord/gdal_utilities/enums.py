@@ -11,6 +11,8 @@ from enum import Enum
 
 from jord.gdal_utilities.importing import GDAL
 
+__all__ = ["GDAL"]
+
 
 class GdalAccessEnum(Enum):
     """

@@ -39,4 +39,6 @@
    jord.gdal_utilities
    jord.pillow_utilities
    jord.qgis_utilities
+   jord.rasterio_utilities
+   jord.shapely_utilities
 

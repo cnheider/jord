@@ -1,3 +1,12 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+__author__ = "Christian Heider Nielsen"
+__doc__ = r"""
+
+           Created on 02-12-2020
+           """
+
 __all__ = ["disconnect_signal", "connect_signal", "reconnect_signal"]
 
 from logging import warning
@@ -8,6 +17,12 @@ IS_DEBUGGING = False
 
 
 def connect_signal(signal: QtCore.pyqtSignal, new_handler: callable = None) -> None:
+    """
+
+    :param signal:
+    :param new_handler:
+    :return:
+    """
     if new_handler is not None:  # if newhandler is not None, connect it
         signal.connect(new_handler)
     else:
@@ -17,6 +32,12 @@ def connect_signal(signal: QtCore.pyqtSignal, new_handler: callable = None) -> N
 
 
 def disconnect_signal(signal: QtCore.pyqtSignal, old_handler: callable = None) -> None:
+    """
+
+    :param signal:
+    :param old_handler:
+    :return:
+    """
     if signal is not None:
         try:
             if old_handler is not None:  # disconnect oldhandler(s)
@@ -37,5 +58,16 @@ def reconnect_signal(
     new_handler: callable = None,
     old_handler: callable = None,
 ) -> None:
+    """
+
+    :param signal:
+    :type signal: QtCore.pyqtSignal
+    :param new_handler:
+    :type new_handler: callable
+    :param old_handler:
+    :type old_handler: callable
+    :return:
+    :rtype: None
+    """
     disconnect_signal(signal, old_handler)
     connect_signal(signal, new_handler)

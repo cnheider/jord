@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<!-- saved from url=(0052)https://lerryws.xyz/posts/PyQGIS-in-Jupyter-Notebook -->
+<html prefix="og: http://ogp.me/ns#" data-lt-installed="true"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Geospatial python tutorial - PyQGIS in Jupyter Notebook</title>
+<meta name="description" content="Tutorial or tips on how to use python for geospatial analysis.">
+
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="viewport-fit=cover, width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1">
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests: default-src * data: mediastream: blob: filesystem: cdvfile: ws: ms-appdata: ms-appx-web: gap: &#39;unsafe-inline&#39; &#39;unsafe-eval&#39;;">
+<meta name="HandheldFriendly" content="True">
+<meta name="MobileOptimized" content="320">
+<meta name="Robots" content="index, follow">
+<meta name="msvalidate.01" content="B2D9F8092CB575E0F4B8960150B69BBB">
+<meta property="og:title" content="Geospatial python tutorial - PyQGIS in Jupyter Notebook - Tutorial or tips on how to use python for geospatial analysis.">
+<meta property="og:image" content="https://lerryws.xyz/images/post_images/20190801/output_12_0.png">
+<meta property="og:url" content="https://lerryws.xyz/posts/PyQGIS-in-Jupyter-Notebook">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Lerry William">
+<meta property="og:description" content="Tutorial or tips on how to use python for geospatial analysis.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Geospatial python tutorial - PyQGIS in Jupyter Notebook">
+<meta name="twitter:image" content="https://lerryws.xyz/images/post_images/20190801/output_12_0.png">
+<meta name="twitter:url" content="https://lerryws.xyz/posts/PyQGIS-in-Jupyter-Notebook">
+<meta name="twitter:description" content="Tutorial or tips on how to use python for geospatial analysis.">
+<link rel="sitemap" type="application/xml" title="Sitemap" href="https://lerryws.xyz/sitemap.xml">
+<link rel="canonical" href="https://lerryws.xyz/posts/PyQGIS-in-Jupyter-Notebook">
+<link rel="alternative" type="application/rss+xml" href="https://lerryws.xyz/feed.xml">
+<link rel="alternative" type="application/atom+xml" href="https://lerryws.xyz/feed.xml">
+<link rel="apple-touch-icon" sizes="57x57" href="https://lerryws.xyz/images/apple-icon-57x57.png">
+<link rel="apple-touch-icon" sizes="60x60" href="https://lerryws.xyz/images/apple-icon-60x60.png">
+<link rel="apple-touch-icon" sizes="72x72" href="https://lerryws.xyz/images/apple-icon-72x72.png">
+<link rel="apple-touch-icon" sizes="76x76" href="https://lerryws.xyz/images/apple-icon-76x76.png">
+<link rel="apple-touch-icon" sizes="114x114" href="https://lerryws.xyz/images/apple-icon-114x114.png">
+<link rel="apple-touch-icon" sizes="120x120" href="https://lerryws.xyz/images/apple-icon-120x120.png">
+<link rel="apple-touch-icon" sizes="144x144" href="https://lerryws.xyz/images/apple-icon-144x144.png">
+<link rel="apple-touch-icon" sizes="152x152" href="https://lerryws.xyz/images/apple-icon-152x152.png">
+<link rel="apple-touch-icon" sizes="180x180" href="https://lerryws.xyz/images/apple-icon-180x180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="https://lerryws.xyz/images/android-icon-192x192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://lerryws.xyz/images/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="96x96" href="https://lerryws.xyz/images/favicon-96x96.png">
+<link rel="icon" type="image/png" sizes="16x16" href="https://lerryws.xyz/images/favicon-16x16.png">
+<link rel="manifest" href="https://lerryws.xyz//images/manifest.json">
+<meta name="msapplication-TileColor" content="#ffffff">
+<meta name="msapplication-TileImage" content="https://lerryws.xyz/images/ms-icon-144x144.png">
+<meta name="theme-color" content="#ffffff">
+<link rel="shortcut icon" href="https://lerryws.xyz/images/favicon-96x96.png">
+<script src="./Geospatial python tutorial - PyQGIS in Jupyter Notebook_files/jquery-1.11.0.min.js.download" type="text/javascript"></script>
+<link rel="stylesheet" href="./Geospatial python tutorial - PyQGIS in Jupyter Notebook_files/lws.css">
+<link rel="stylesheet" href="./Geospatial python tutorial - PyQGIS in Jupyter Notebook_files/syntax.css">
+<link rel="stylesheet" href="./Geospatial python tutorial - PyQGIS in Jupyter Notebook_files/skeleton.css">
+<link rel="stylesheet" href="./Geospatial python tutorial - PyQGIS in Jupyter Notebook_files/all.min.css">
+<link rel="stylesheet" href="./Geospatial python tutorial - PyQGIS in Jupyter Notebook_files/style.css">
+<link rel="stylesheet" type="text/css" href="./Geospatial python tutorial - PyQGIS in Jupyter Notebook_files/cookieconsent.min.css">
+
+<script async="" src="./Geospatial python tutorial - PyQGIS in Jupyter Notebook_files/ga-lite.min.js.download" type="text/javascript"></script>
+<script type="text/javascript">
+  var galite = galite || {};
+  galite.UA = 'UA-125651421-1'; // Insert your tracking code here
+  </script>
+
+<script async="" data-ad-client="ca-pub-9792889126704578" src="./Geospatial python tutorial - PyQGIS in Jupyter Notebook_files/f.txt" type="text/javascript"></script>
+<script src="./Geospatial python tutorial - PyQGIS in Jupyter Notebook_files/embed.js.download" data-timestamp="1678088030253"></script><style></style><style data-react-tooltip="true">.__react_component_tooltip {
+  border-radius: 3px;
+  display: inline-block;
+  font-size: 13px;
+  left: -999em;
+  opacity: 0;
+  padding: 8px 21px;
+  position: fixed;
+  pointer-events: none;
+  transition: opacity 0.3s ease-out;
+  top: -999em;
+  visibility: hidden;
+  z-index: 999;
+}
+.__react_component_tooltip.allow_hover, .__react_component_tooltip.allow_click {
+  pointer-events: auto;
+}
+.__react_component_tooltip::before, .__react_component_tooltip::after {
+  content: "";
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+.__react_component_tooltip.show {
+  opacity: 0.9;
+  margin-top: 0;
+  margin-left: 0;
+  visibility: visible;
+}
+.__react_component_tooltip.place-top::before {
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  bottom: -8px;
+  left: 50%;
+  margin-left: -10px;
+}
+.__react_component_tooltip.place-bottom::before {
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  top: -8px;
+  left: 50%;
+  margin-left: -10px;
+}
+.__react_component_tooltip.place-left::before {
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  right: -8px;
+  top: 50%;
+  margin-top: -5px;
+}
+.__react_component_tooltip.place-right::before {
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  left: -8px;
+  top: 50%;
+  margin-top: -5px;
+}
+.__react_component_tooltip .multi-line {
+  display: block;
+  padding: 2px 0;
+  text-align: center;
+}</style></head>
+<body><div role="dialog" aria-live="polite" aria-label="cookieconsent" aria-describedby="cookieconsent:desc" class="cc-window cc-banner cc-type-info cc-theme-edgeless cc-bottom cc-color-override--1588655054 " style=""><!--googleoff: all--><span id="cookieconsent:desc" class="cc-message">This website uses cookies to ensure you get the best experience on our website. <a aria-label="learn more about cookies" role="button" tabindex="0" class="cc-link" href="https://www.cookiesandyou.com/" rel="noopener noreferrer nofollow" target="_blank">Learn more</a></span><div class="cc-compliance"><a aria-label="dismiss cookie message" role="button" tabindex="0" class="cc-btn cc-dismiss">Got it!</a></div><!--googleon: all--></div><div id="ext-megabonus-main-content" class="ext-megabonus-top-line"><div class="ext-megabonus__container"><div class="ext-megabonus__container-content"><div id="notice-wrapper" class=""><div class="topline-settings-modal" style="display: none;"><a class="close-icon"></a><div class="loader"><img src="./Geospatial python tutorial - PyQGIS in Jupyter Notebook_files/preloader_yellow.svg" alt=""></div><h3>General settings</h3><div class="checkboxes"><div><input type="checkbox" id="mb_sm_options_group_5" name="info_about_sites_with_cashback" checked=""><label for="mb_sm_options_group_5"><span>Show the notifications about cash back activation on the websites where cash back is available</span></label></div><div><input type="checkbox" id="mb_sm_options_group_6" name="google_and_yandex_show" checked=""><label for="mb_sm_options_group_6"><span>Show the clues about cash back availability on Google and Yandex search results pages</span></label></div><div><input type="checkbox" id="mb_sm_options_group_7" name="link_tooltips_show" checked=""><label for="mb_sm_options_group_7"><span>Display the cash back activation window next to product links</span></label></div><div><input type="checkbox" id="mb_sm_options_group_8" name="show_similar_goods_on_hypermarkets_pages" checked=""><label for="mb_sm_options_group_8"><span>Display the "Similar products" block on online stores' pages</span></label></div></div><h3>Language settings</h3><select><option value="ru">Русский</option><option value="en">English</option><option value="es">Español</option><option value="pt">Português</option></select><h3>Notifications settings</h3><div class="checkboxes"><div><input type="checkbox" id="mb_sm_options_notify_1" name="cashback_notify" checked=""><label for="mb_sm_options_notify_1"><span>Cash back notifications.</span></label></div></div><div class="bottom"><a href="https://megabonus.com/user/ask" target="_blank">Ask a question</a><span class="copyright">© Megabonus.com 2023</span></div></div></div><div class="__react_component_tooltip tc69dfa34-d088-4326-8055-85b4837cf431 place-top type-dark allow_click" id="mb-link-tooltip" data-id="tooltip"><style aria-hidden="true">
+  	.tc69dfa34-d088-4326-8055-85b4837cf431 {
+	    color: #fff;
+	    background: #222;
+	    border: 1px solid transparent;
+  	}
+
+  	.tc69dfa34-d088-4326-8055-85b4837cf431.place-top {
+        margin-top: -10px;
+    }
+    .tc69dfa34-d088-4326-8055-85b4837cf431.place-top::before {
+        border-top: 8px solid transparent;
+    }
+    .tc69dfa34-d088-4326-8055-85b4837cf431.place-top::after {
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        bottom: -6px;
+        left: 50%;
+        margin-left: -8px;
+        border-top-color: #222;
+        border-top-style: solid;
+        border-top-width: 6px;
+    }
+
+    .tc69dfa34-d088-4326-8055-85b4837cf431.place-bottom {
+        margin-top: 10px;
+    }
+    .tc69dfa34-d088-4326-8055-85b4837cf431.place-bottom::before {
+        border-bottom: 8px solid transparent;
+    }
+    .tc69dfa34-d088-4326-8055-85b4837cf431.place-bottom::after {
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        top: -6px;
+        left: 50%;
+        margin-left: -8px;
+        border-bottom-color: #222;
+        border-bottom-style: solid;
+        border-bottom-width: 6px;
+    }
+
+    .tc69dfa34-d088-4326-8055-85b4837cf431.place-left {
+        margin-left: -10px;
+    }
+    .tc69dfa34-d088-4326-8055-85b4837cf431.place-left::before {
+        border-left: 8px solid transparent;
+    }
+    .tc69dfa34-d088-4326-8055-85b4837cf431.place-left::after {
+        border-top: 5px solid transparent;
+        border-bottom: 5px solid transparent;
+        right: -6px;
+        top: 50%;
+        margin-top: -4px;
+        border-left-color: #222;
+        border-left-style: solid;
+        border-left-width: 6px;
+    }
+
+    .tc69dfa34-d088-4326-8055-85b4837cf431.place-right {
+        margin-left: 10px;
+    }
+    .tc69dfa34-d088-4326-8055-85b4837cf431.place-right::before {
+        border-right: 8px solid transparent;
+    }
+    .tc69dfa34-d088-4326-8055-85b4837cf431.place-right::after {
+        border-top: 5px solid transparent;
+        border-bottom: 5px solid transparent;
+        left: -6px;
+        top: 50%;
+        margin-top: -4px;
+        border-right-color: #222;
+        border-right-style: solid;
+        border-right-width: 6px;
+    }
+  </style></div></div></div></div>
+<div class="menu">
+<div class="row">
+<div class="twelve column" style="text-align:center">
+<nav>
+<a href="https://lerryws.xyz/" title="home"><i class="fas fa-home"></i></a>
+<a href="https://lerryws.xyz/posts" title="post"><i class="fa fa-pen-nib"></i></a>
+<a href="https://lerryws.xyz/projects" title="projects"><i class="fa fa-tools"></i></a>
+
+</nav>
+</div>
+</div>
+</div>
+<hr>
+<h1 class="title">Geospatial python tutorial - PyQGIS in Jupyter Notebook</h1>
+<p class="date">August 01, 2019
+<span class="categories">
+| category 👉 <a href="https://lerryws.xyz/category/python">python</a>, <a href="https://lerryws.xyz/category/GIS">GIS</a>, <a href="https://lerryws.xyz/category/QGIS">QGIS</a>, <a href="https://lerryws.xyz/category/pyqgis">pyqgis</a>
+</span>
+</p>
+<style>
+#share-buttons {display: inline-block; vertical-align: middle; }
+#share-buttons:after {content: ""; display: block; clear: both;}
+#share-buttons > div {
+    position: relative;
+    text-align: left; 
+    height: 36px; 
+    width: 32px; 
+    float: left; 
+    text-align: center;
+}
+#share-buttons > div > svg {height: 16px; fill: #d5d5d5; margin-top: 10px;}
+#share-buttons > div:hover {cursor: pointer;}
+#share-buttons > div.facebook:hover > svg {fill: #3B5998;}
+#share-buttons > div.twitter:hover > svg {fill: #55ACEE;}
+#share-buttons > div.linkedin:hover > svg {fill: #0077b5;}
+#share-buttons > div.pinterest:hover > svg {fill: #CB2027;}
+#share-buttons > div.gplus:hover > svg {fill: #dd4b39;}
+#share-buttons > div.mail:hover > svg {fill: #7D7D7D;}
+#share-buttons > div.instagram:hover > svg {fill: #C73B92;}
+#share-buttons > div.facebook > svg {height: 18px; margin-top: 9px;}
+#share-buttons > div.twitter > svg {height: 20px; margin-top: 8px;}
+#share-buttons > div.linkedin > svg {height: 19px; margin-top: 7px;}
+#share-buttons > div.pinterest > svg {height: 20px; margin-top: 9px;}
+#share-buttons > div.gplus > svg {height: 17px; margin-top: 9px; position: relative; left: 1px;}
+#share-buttons > div.mail > svg {height: 14px; margin-top: 11px;}
+</style>
+<span style="color: silver;">Share on: </span><div id="share-buttons">
+<div class="facebook" title="Share this on Facebook" onclick="if (!window.__cfRLUnblockHandlers) return false; window.open(&#39;http://www.facebook.com/share.php?u=https://lerryws.xyz/posts/PyQGIS-in-Jupyter-Notebook&#39;);"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1343 12v264h-157q-86 0-116 36t-30 108v189h293l-39 296h-254v759h-306v-759h-255v-296h255v-218q0-186 104-288.5t277-102.5q147 0 228 12z"></path></svg></div>
+<div class="twitter" title="Share this on Twitter" onclick="if (!window.__cfRLUnblockHandlers) return false; window.open(&#39;http://twitter.com/home?status=https://lerryws.xyz/posts/PyQGIS-in-Jupyter-Notebook&#39;);"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1684 408q-67 98-162 167 1 14 1 42 0 130-38 259.5t-115.5 248.5-184.5 210.5-258 146-323 54.5q-271 0-496-145 35 4 78 4 225 0 401-138-105-2-188-64.5t-114-159.5q33 5 61 5 43 0 85-11-112-23-185.5-111.5t-73.5-205.5v-4q68 38 146 41-66-44-105-115t-39-154q0-88 44-163 121 149 294.5 238.5t371.5 99.5q-8-38-8-74 0-134 94.5-228.5t228.5-94.5q140 0 236 102 109-21 205-78-37 115-142 178 93-10 186-50z"></path></svg></div>
+<div class="linkedin" title="Share this on Linkedin" onclick="if (!window.__cfRLUnblockHandlers) return false; window.open(&#39;https://www.linkedin.com/shareArticle?mini=true&amp;url=https://lerryws.xyz/posts/PyQGIS-in-Jupyter-Notebook&amp;title=&amp;summary=&amp;source=&#39;);"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M477 625v991h-330v-991h330zm21-306q1 73-50.5 122t-135.5 49h-2q-82 0-132-49t-50-122q0-74 51.5-122.5t134.5-48.5 133 48.5 51 122.5zm1166 729v568h-329v-530q0-105-40.5-164.5t-126.5-59.5q-63 0-105.5 34.5t-63.5 85.5q-11 30-11 81v553h-329q2-399 2-647t-1-296l-1-48h329v144h-2q20-32 41-56t56.5-52 87-43.5 114.5-15.5q171 0 275 113.5t104 332.5z"></path></svg></div>
+<div class="pinterest" title="Share this on Pinterest" onclick="if (!window.__cfRLUnblockHandlers) return false; window.open(&#39;https://pinterest.com/pin/create/button/?url=&amp;media=https://lerryws.xyz/images/post_images/20190801/output_12_0.png&amp;description=&#39;);"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M256 597q0-108 37.5-203.5t103.5-166.5 152-123 185-78 202-26q158 0 294 66.5t221 193.5 85 287q0 96-19 188t-60 177-100 149.5-145 103-189 38.5q-68 0-135-32t-96-88q-10 39-28 112.5t-23.5 95-20.5 71-26 71-32 62.5-46 77.5-62 86.5l-14 5-9-10q-15-157-15-188 0-92 21.5-206.5t66.5-287.5 52-203q-32-65-32-169 0-83 52-156t132-73q61 0 95 40.5t34 102.5q0 66-44 191t-44 187q0 63 45 104.5t109 41.5q55 0 102-25t78.5-68 56-95 38-110.5 20-111 6.5-99.5q0-173-109.5-269.5t-285.5-96.5q-200 0-334 129.5t-134 328.5q0 44 12.5 85t27 65 27 45.5 12.5 30.5q0 28-15 73t-37 45q-2 0-17-3-51-15-90.5-56t-61-94.5-32.5-108-11-106.5z"></path></svg></div>
+<div class="gplus" title="Share this on Google Plus" onclick="if (!window.__cfRLUnblockHandlers) return false; window.open(&#39;https://plus.google.com/share?url=https://lerryws.xyz/posts/PyQGIS-in-Jupyter-Notebook&#39;);"><svg viewBox="0 0 2304 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1437 913q0 208-87 370.5t-248 254-369 91.5q-149 0-285-58t-234-156-156-234-58-285 58-285 156-234 234-156 285-58q286 0 491 192l-199 191q-117-113-292-113-123 0-227.5 62t-165.5 168.5-61 232.5 61 232.5 165.5 168.5 227.5 62q83 0 152.5-23t114.5-57.5 78.5-78.5 49-83 21.5-74h-416v-252h692q12 63 12 122zm867-122v210h-209v209h-210v-209h-209v-210h209v-209h210v209h209z"></path></svg></div>
+<div class="mail" title="Share this through Email" onclick="if (!window.__cfRLUnblockHandlers) return false; window.open(&#39;mailto:?&amp;body=https://lerryws.xyz/posts/PyQGIS-in-Jupyter-Notebook&#39;);"><svg viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg"><path d="M1792 710v794q0 66-47 113t-113 47h-1472q-66 0-113-47t-47-113v-794q44 49 101 87 362 246 497 345 57 42 92.5 65.5t94.5 48 110 24.5h2q51 0 110-24.5t94.5-48 92.5-65.5q170-123 498-345 57-39 100-87zm0-294q0 79-49 151t-122 123q-376 261-468 325-10 7-42.5 30.5t-54 38-52 32.5-57.5 27-50 9h-2q-23 0-50-9t-57.5-27-52-32.5-54-38-42.5-30.5q-91-64-262-182.5t-205-142.5q-62-42-117-115.5t-55-136.5q0-78 41.5-130t118.5-52h1472q65 0 112.5 47t47.5 113z"></path></svg></div>
+</div>
+<h1 id="run-pyqgis-in-jupyter-notebook">Run PyQGIS in Jupyter Notebook</h1>
+<p>Usually, I did a lot of my PyQGIS scripting in QGIS python console and also PyCharm for plugins development. But I wanted something different this time, so tried to use <strong>PyQGIS</strong> in Jupyter notebook. I have been facing some issues to run <strong>PyQGIS</strong> inside Jupyter Notebook before. Since I already resolved that issues, I am happy to share it and hopefully it is really useful for your awesome projects.</p>
+<p>It is fun to do some experiment on this and I hope you guys can build something wonderful in <strong>Jupyter</strong> using <strong>QGIS</strong> libraries and module. Well, at least that is my intention.</p>
+<p>Before we start writing our script in Jupyter Notebook , we need to setup our environment by creating a <strong>*.cmd</strong> or <strong>*.bat</strong> file.</p>
+<h2 id="setup">Setup</h2>
+<h3 id="setting-the-environment">Setting the Environment</h3>
+<p>First, we need to install Jupyter notebook in QGIS3 environment, please check my <a href="https://lerryws.xyz/posts/Install-Jupyter-Notebook-in-QGIS3">previous post on how to install it</a>.</p>
+<p>Before we begin our scripting in Jupyter, you might want to copy and paste batch script below and save it as <strong>*.cmd</strong> or <strong>*.bat</strong>. Make sure you check the directory, edit the path or directory wherever possible. At the bottom line there is a line called <code class="language-plaintext highlighter-rouge">call jupyter notebook</code>, you can change it to <code class="language-plaintext highlighter-rouge">cmd.exe</code> if you got something in your mind and need to use command line.</p>
+<p><strong>Notes ! :</strong> Please check all the directories, make sure it is available. I am using Windows, so it could be different in other OS system. I am also using OSGEO4W for my QGIS installation, so please use your QGIS installation directory.</p>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@echo off
+call <span class="s2">"%~dp0</span><span class="se">\o</span><span class="s2">4w_env.bat"</span>
+call <span class="s2">"%OSGEO4W_ROOT%</span><span class="se">\a</span><span class="s2">pps</span><span class="se">\g</span><span class="s2">rass</span><span class="se">\g</span><span class="s2">rass76</span><span class="se">\e</span><span class="s2">tc</span><span class="se">\e</span><span class="s2">nv.bat"</span>
+call qt5_env.bat
+call py3_env.bat
+@echo off
+path %OSGEO4W_ROOT%<span class="se">\a</span>pps<span class="se">\q</span>gis<span class="se">\b</span><span class="k">in</span><span class="p">;</span>%OSGEO4W_ROOT%<span class="se">\a</span>pps<span class="se">\g</span>rass<span class="se">\g</span>rass76<span class="se">\l</span>ib<span class="p">;</span>%OSGEO4W_ROOT%<span class="se">\a</span>pps<span class="se">\g</span>rass<span class="se">\g</span>rass76<span class="se">\b</span><span class="k">in</span><span class="p">;</span>%PATH%
+PATH %OSGEO4W_ROOT%<span class="se">\a</span>pps<span class="se">\q</span>gis<span class="se">\p</span>ython<span class="p">;</span>%PATH%
+PATH %OSGEO4W_ROOT%<span class="se">\a</span>pps<span class="se">\q</span>gis<span class="se">\b</span><span class="k">in</span><span class="p">;</span>%PATH%
+PATH %OSGEO4W_ROOT%<span class="se">\a</span>pps<span class="se">\Q</span>t5<span class="se">\b</span><span class="k">in</span><span class="p">;</span>%PATH%
+PATH %OSGEO4W_ROOT%<span class="se">\a</span>pps<span class="se">\P</span>ython37<span class="p">;</span>%PATH%
+PATH %OSGEO4W_ROOT%<span class="se">\a</span>pps<span class="se">\P</span>ython37<span class="se">\S</span>cripts<span class="p">;</span>%PATH%
+PATH %OSGEO4W_ROOT%<span class="se">\a</span>pps<span class="se">\q</span>gis<span class="se">\p</span>ython<span class="se">\p</span>lugins<span class="p">;</span>%PATH%
+PATH %OSGEO4W_ROOT%<span class="se">\a</span>pps<span class="se">\P</span>ython37<span class="se">\D</span>LLs<span class="p">;</span>%PATH%
+PATH %OSGEO4W_ROOT%<span class="se">\a</span>pps<span class="se">\P</span>ython37<span class="se">\l</span>ib<span class="p">;</span>%PATH%
+PATH %OSGEO4W_ROOT%<span class="se">\a</span>pps<span class="se">\P</span>ython37<span class="se">\l</span>ib<span class="se">\s</span>ite<span class="se">\p</span>ackages<span class="p">;</span>%PATH%
+
+<span class="nb">set </span><span class="nv">QGIS_PREFIX_PATH</span><span class="o">=</span>%OSGEO4W_ROOT:<span class="se">\=</span>/%/apps/qgis
+<span class="nb">set </span><span class="nv">GDAL_FILENAME_IS_UTF8</span><span class="o">=</span>YES
+<span class="nb">set </span><span class="nv">VSI_CACHE</span><span class="o">=</span>TRUE
+<span class="nb">set </span><span class="nv">VSI_CACHE_SIZE</span><span class="o">=</span>1000000
+<span class="nb">set </span><span class="nv">QT_PLUGIN_PATH</span><span class="o">=</span>%OSGEO4W_ROOT%<span class="se">\a</span>pps<span class="se">\q</span>gis<span class="se">\q</span>tplugins<span class="p">;</span>%OSGEO4W_ROOT%<span class="se">\a</span>pps<span class="se">\q</span>t5<span class="se">\p</span>lugins
+<span class="nb">set </span><span class="nv">PYTHONPATH</span><span class="o">=</span>%OSGEO4W_ROOT%<span class="se">\a</span>pps<span class="se">\q</span>gis<span class="se">\p</span>ython
+
+@echo off
+call jupyter notebook
+</code></pre></div></div>
+<p>Save this file somewhere in you computer, or just save it in the <code class="language-plaintext highlighter-rouge">E:\OSGeo4W64\bin</code> so you can run it from <strong>OSGEO4W Shell</strong>.
+Name it as <code class="language-plaintext highlighter-rouge">run-jupyter.bat</code> so whenever we open <strong>OSGeo4W Shell</strong> just type run-jupyter.bat</p>
+<h3 id="testing-our-script-in-jupyter-notebook">Testing our script in Jupyter Notebook!</h3>
+<p>In jupyter notebook, we can start writing our script..</p>
+<p>Try to write something as below, if there are no error messages, then you are doing great.</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">qgis.core</span> <span class="kn">import</span> <span class="o">*</span>
+</code></pre></div></div>
+<p>So now, lets try to do something simple, like extracting vertices from vector data.</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">osgeo</span> <span class="kn">import</span> <span class="n">ogr</span>
+<span class="kn">from</span> <span class="nn">qgis.core</span> <span class="kn">import</span> <span class="p">(</span>
+     <span class="n">QgsApplication</span><span class="p">,</span>
+     <span class="n">QgsProcessingFeedback</span><span class="p">,</span>
+     <span class="n">QgsVectorLayer</span>
+<span class="p">)</span>
+<span class="kn">from</span> <span class="nn">qgis.analysis</span> <span class="kn">import</span> <span class="n">QgsNativeAlgorithms</span>
+</code></pre></div></div>
+<p>We need python to set the QGIS prefix, and access it from <code class="language-plaintext highlighter-rouge">E:\OSGeo4W64\apps\qgis</code>. After we initiate QGIS in python system, append the plugins libraries by accessing this folder, <code class="language-plaintext highlighter-rouge">E:\OSGeo4W64\apps\qgis\python\plugins</code>.</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">QgsApplication</span><span class="p">.</span><span class="n">setPrefixPath</span><span class="p">(</span><span class="sa">r</span><span class="s">'E:\OSGeo4W64\apps\qgis'</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+<span class="n">qgs</span> <span class="o">=</span> <span class="n">QgsApplication</span><span class="p">([],</span> <span class="bp">False</span><span class="p">)</span>
+<span class="n">qgs</span><span class="p">.</span><span class="n">initQgis</span><span class="p">()</span>
+<span class="n">sys</span><span class="p">.</span><span class="n">path</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="sa">r</span><span class="s">'E:\OSGeo4W64\apps\qgis\python\plugins'</span><span class="p">)</span>
+</code></pre></div></div>
+<p>We need to know all the available processing module within QGIS, so follow as bellow.</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">geopandas</span> <span class="k">as</span> <span class="n">gpd</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="n">plt</span><span class="p">.</span><span class="n">ion</span><span class="p">()</span>
+
+<span class="kn">import</span> <span class="nn">processing</span>
+<span class="kn">from</span> <span class="nn">processing.core.Processing</span> <span class="kn">import</span> <span class="n">Processing</span>
+<span class="n">Processing</span><span class="p">.</span><span class="n">initialize</span><span class="p">()</span>
+<span class="n">QgsApplication</span><span class="p">.</span><span class="n">processingRegistry</span><span class="p">().</span><span class="n">addProvider</span><span class="p">(</span><span class="n">QgsNativeAlgorithms</span><span class="p">())</span>
+<span class="k">for</span> <span class="n">alg</span> <span class="ow">in</span> <span class="n">QgsApplication</span><span class="p">.</span><span class="n">processingRegistry</span><span class="p">().</span><span class="n">algorithms</span><span class="p">():</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">alg</span><span class="p">.</span><span class="nb">id</span><span class="p">(),</span> <span class="s">"---&gt;"</span><span class="p">,</span> <span class="n">alg</span><span class="p">.</span><span class="n">displayName</span><span class="p">())</span>
+</code></pre></div></div>
+<p>Set our source data, then plot using matplotlib.</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">source</span> <span class="o">=</span> <span class="sa">r</span><span class="s">"E:\Program_dev\data\test.geojson"</span>
+<span class="n">inputvector</span> <span class="o">=</span> <span class="n">QgsVectorLayer</span><span class="p">(</span><span class="sa">r</span><span class="s">"E:\Program_dev\data\test.geojson"</span><span class="p">)</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="p">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+<span class="n">gpd</span><span class="p">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">source</span><span class="p">).</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">);</span>
+</code></pre></div></div>
+<p><img src="./Geospatial python tutorial - PyQGIS in Jupyter Notebook_files/output_12_0.png" alt="png"></p>
+<h4 id="extract-vertices">Extract Vertices</h4>
+<p>Before we start, lets check the parameter need to run this algorithm by following below scripts</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">processing</span><span class="p">.</span><span class="n">algorithmHelp</span><span class="p">(</span><span class="s">"native:extractvertices"</span><span class="p">)</span>
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Extract vertices (native:extractvertices)
+
+This algorithm takes a line or polygon layer and generates a point layer with points representing the vertices in the input lines or polygons. The attributes associated to each point are the same ones associated to the line or polygon that the point belongs to.
+
+Additional fields are added to the point indicating the vertex index (beginning at 0), the vertex’s part and its index within the part (as well as its ring for polygons), distance along original geometry and bisector angle of vertex for original geometry.
+
+
+----------------
+Input parameters
+----------------
+
+INPUT: Input layer
+
+    Parameter type:    QgsProcessingParameterFeatureSource
+
+    Accepted data types:
+        - str: layer ID
+        - str: layer name
+        - str: layer source
+        - QgsProcessingFeatureSourceDefinition
+        - QgsProperty
+        - QgsVectorLayer
+
+OUTPUT: Vertices
+
+    Parameter type:    QgsProcessingParameterFeatureSink
+
+    Accepted data types:
+        - str: destination vector file, e.g. 'd:/test.shp'
+        - str: 'memory:' to store result in temporary memory layer
+        - str: using vector provider ID prefix and destination URI, e.g. 'postgres:…' to store result in PostGIS table
+        - QgsProcessingOutputLayerDefinition
+        - QgsProperty
+
+----------------
+Outputs
+----------------
+
+OUTPUT:  &lt;QgsProcessingOutputVectorLayer&gt;
+    Vertices
+</code></pre></div></div>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">vertice_out</span> <span class="o">=</span> <span class="sa">r</span><span class="s">"E:\Program_dev\data\out_vertices.geojson"</span>
+<span class="c1"># just delete the output if exist
+</span><span class="k">if</span> <span class="n">os</span><span class="p">.</span><span class="n">path</span><span class="p">.</span><span class="n">exists</span><span class="p">(</span><span class="n">vertice_out</span><span class="p">):</span>
+    <span class="n">os</span><span class="p">.</span><span class="n">remove</span><span class="p">(</span><span class="n">vertice_out</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">pass</span>
+<span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">'INPUT'</span><span class="p">:</span> <span class="n">inputvector</span><span class="p">,</span>
+    <span class="s">'OUTPUT'</span><span class="p">:</span> <span class="n">vertice_out</span>
+<span class="p">}</span>
+<span class="n">feedback</span> <span class="o">=</span> <span class="n">QgsProcessingFeedback</span><span class="p">()</span>
+<span class="n">processing</span><span class="p">.</span><span class="n">run</span><span class="p">(</span><span class="s">"native:extractvertices"</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">feedback</span><span class="o">=</span><span class="n">feedback</span><span class="p">)</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="p">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+<span class="n">gpd</span><span class="p">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">vertice_out</span><span class="p">).</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">);</span>
+</code></pre></div></div>
+<p><img src="./Geospatial python tutorial - PyQGIS in Jupyter Notebook_files/output_15_0.png" alt="png"></p>
+<h4 id="buffer">Buffer</h4>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">processing</span><span class="p">.</span><span class="n">algorithmHelp</span><span class="p">(</span><span class="s">"native:buffer"</span><span class="p">)</span>
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Buffer (native:buffer)
+
+This algorithm computes a buffer area for all the features in an input layer, using a fixed or dynamic distance.
+
+The segments parameter controls the number of line segments to use to approximate a quarter circle when creating rounded offsets.
+
+The end cap style parameter controls how line endings are handled in the buffer.
+
+The join style parameter specifies whether round, miter or beveled joins should be used when offsetting corners in a line.
+
+The miter limit parameter is only applicable for miter join styles, and controls the maximum distance from the offset curve to use when creating a mitered join.
+
+
+----------------
+Input parameters
+----------------
+
+INPUT: Input layer
+
+    Parameter type:    QgsProcessingParameterFeatureSource
+
+    Accepted data types:
+        - str: layer ID
+        - str: layer name
+        - str: layer source
+        - QgsProcessingFeatureSourceDefinition
+        - QgsProperty
+        - QgsVectorLayer
+
+DISTANCE: Distance
+
+    Parameter type:    QgsProcessingParameterDistance
+
+    Accepted data types:
+        - int
+        - float
+        - QgsProperty
+
+SEGMENTS: Segments
+
+    Parameter type:    QgsProcessingParameterNumber
+
+    Accepted data types:
+        - int
+        - float
+        - QgsProperty
+
+END_CAP_STYLE: End cap style
+
+    Parameter type:    QgsProcessingParameterEnum
+
+    Available values:
+        - 0: Round
+        - 1: Flat
+        - 2: Square
+
+    Accepted data types:
+        - int
+        - str: as string representation of int, e.g. '1'
+        - QgsProperty
+
+JOIN_STYLE: Join style
+
+    Parameter type:    QgsProcessingParameterEnum
+
+    Available values:
+        - 0: Round
+        - 1: Miter
+        - 2: Bevel
+
+    Accepted data types:
+        - int
+        - str: as string representation of int, e.g. '1'
+        - QgsProperty
+
+MITER_LIMIT: Miter limit
+
+    Parameter type:    QgsProcessingParameterNumber
+
+    Accepted data types:
+        - int
+        - float
+        - QgsProperty
+
+DISSOLVE: Dissolve result
+
+    Parameter type:    QgsProcessingParameterBoolean
+
+    Accepted data types:
+        - bool
+        - int
+        - str
+        - QgsProperty
+
+OUTPUT: Buffered
+
+    Parameter type:    QgsProcessingParameterFeatureSink
+
+    Accepted data types:
+        - str: destination vector file, e.g. 'd:/test.shp'
+        - str: 'memory:' to store result in temporary memory layer
+        - str: using vector provider ID prefix and destination URI, e.g. 'postgres:…' to store result in PostGIS table
+        - QgsProcessingOutputLayerDefinition
+        - QgsProperty
+
+----------------
+Outputs
+----------------
+
+OUTPUT:  &lt;QgsProcessingOutputVectorLayer&gt;
+    Buffered
+</code></pre></div></div>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">buf_out</span> <span class="o">=</span> <span class="sa">r</span><span class="s">"E:\Program_dev\data\buffer_output.geojson"</span>
+<span class="c1"># just delete the output if exist
+</span><span class="k">if</span> <span class="n">os</span><span class="p">.</span><span class="n">path</span><span class="p">.</span><span class="n">exists</span><span class="p">(</span><span class="n">buf_out</span><span class="p">):</span>
+    <span class="n">os</span><span class="p">.</span><span class="n">remove</span><span class="p">(</span><span class="n">buf_out</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">pass</span>
+<span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">'INPUT'</span><span class="p">:</span> <span class="n">inputvector</span><span class="p">,</span>
+    <span class="s">'DISTANCE'</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>
+    <span class="s">'SEGMENTS'</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+    <span class="s">'END_CAP_STYLE'</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span>
+    <span class="s">'JOIN_STYLE'</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span>
+    <span class="s">'MITER_LIMIT'</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span>
+    <span class="s">'DISSOLVE'</span><span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+    <span class="s">'OUTPUT'</span><span class="p">:</span> <span class="n">buf_out</span>
+<span class="p">}</span>
+<span class="n">feedback</span> <span class="o">=</span> <span class="n">QgsProcessingFeedback</span><span class="p">()</span>
+<span class="n">processing</span><span class="p">.</span><span class="n">run</span><span class="p">(</span><span class="s">"native:buffer"</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">feedback</span><span class="o">=</span><span class="n">feedback</span><span class="p">)</span>
+<span class="c1"># plot the data using geopandas .plot() method
+</span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="p">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+<span class="n">gpd</span><span class="p">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">buf_out</span><span class="p">).</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">);</span>
+</code></pre></div></div>
+<p><img src="./Geospatial python tutorial - PyQGIS in Jupyter Notebook_files/output_18_0.png" alt="png"></p>
+<h4 id="random-points">Random points</h4>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">processing</span><span class="p">.</span><span class="n">algorithmHelp</span><span class="p">(</span><span class="s">"qgis:randompointsinsidepolygons"</span><span class="p">)</span>
+</code></pre></div></div>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Random points inside polygons (qgis:randompointsinsidepolygons)
+
+
+----------------
+Input parameters
+----------------
+
+INPUT: Input layer
+
+    Parameter type:    QgsProcessingParameterFeatureSource
+
+    Accepted data types:
+        - str: layer ID
+        - str: layer name
+        - str: layer source
+        - QgsProcessingFeatureSourceDefinition
+        - QgsProperty
+        - QgsVectorLayer
+
+STRATEGY: Sampling strategy
+
+    Parameter type:    QgsProcessingParameterEnum
+
+    Available values:
+        - 0: Points count
+        - 1: Points density
+
+    Accepted data types:
+        - int
+        - str: as string representation of int, e.g. '1'
+        - QgsProperty
+
+EXPRESSION: Expression
+
+    Parameter type:    QgsProcessingParameterExpression
+
+    Accepted data types:
+        - str
+        - QgsProperty
+
+MIN_DISTANCE: Minimum distance between points
+
+    Parameter type:    QgsProcessingParameterDistance
+
+    Accepted data types:
+        - int
+        - float
+        - QgsProperty
+
+OUTPUT: Random points
+
+    Parameter type:    QgsProcessingParameterFeatureSink
+
+    Accepted data types:
+        - str: destination vector file, e.g. 'd:/test.shp'
+        - str: 'memory:' to store result in temporary memory layer
+        - str: using vector provider ID prefix and destination URI, e.g. 'postgres:…' to store result in PostGIS table
+        - QgsProcessingOutputLayerDefinition
+        - QgsProperty
+
+----------------
+Outputs
+----------------
+
+OUTPUT:  &lt;QgsProcessingOutputVectorLayer&gt;
+    Random points
+</code></pre></div></div>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">random_out</span> <span class="o">=</span> <span class="sa">r</span><span class="s">"E:\Program_dev\data\random_output.geojson"</span>
+<span class="c1"># just delete the output if exist
+</span><span class="k">if</span> <span class="n">os</span><span class="p">.</span><span class="n">path</span><span class="p">.</span><span class="n">exists</span><span class="p">(</span><span class="n">buf_out</span><span class="p">):</span>
+    <span class="n">os</span><span class="p">.</span><span class="n">remove</span><span class="p">(</span><span class="n">buf_out</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">pass</span>
+<span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">'INPUT'</span><span class="p">:</span> <span class="n">inputvector</span><span class="p">,</span>
+    <span class="s">'STRATEGY'</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="s">'EXPRESSION'</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span>
+    <span class="s">'MIN_DISTANCE'</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span>
+    <span class="s">'OUTPUT'</span><span class="p">:</span> <span class="n">random_out</span>
+<span class="p">}</span>
+<span class="n">feedback</span> <span class="o">=</span> <span class="n">QgsProcessingFeedback</span><span class="p">()</span>
+<span class="n">processing</span><span class="p">.</span><span class="n">run</span><span class="p">(</span><span class="s">"qgis:randompointsinsidepolygons"</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">feedback</span><span class="o">=</span><span class="n">feedback</span><span class="p">)</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="p">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+<span class="n">gpd</span><span class="p">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">random_out</span><span class="p">).</span><span class="n">plot</span><span class="p">(</span><span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">);</span>
+</code></pre></div></div>
+<p><img src="./Geospatial python tutorial - PyQGIS in Jupyter Notebook_files/output_21_0.png" alt="png"></p>
+<p>Have fun exploring QGIS using Jupyter Notebook!</p>
+<a class="mono" href="https://lerryws.xyz/posts">⤎ back to posts</a>
+<hr>
+<script async="" data-ad-client="ca-pub-9792889126704578" src="./Geospatial python tutorial - PyQGIS in Jupyter Notebook_files/f.txt" type="text/javascript"></script>
+<div id="disqus_thread" style="display: inline-block;"><iframe style="display: inline-block; width: 100%; border: 1px solid rgb(204, 204, 204); height: 80px; background: rgb(255, 255, 255);" src="./Geospatial python tutorial - PyQGIS in Jupyter Notebook_files/saved_resource.html"></iframe></div>
+<script type="text/javascript">
+  var disqus_config = function () {
+    this.page.identifier = "/posts/PyQGIS-in-Jupyter-Notebook";
+  };
+
+  (function() { // DON'T EDIT BELOW THIS LINE
+    var d = document, s = d.createElement('script');
+    s.src = '//lerryws-xyz.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+  })();
+</script>
+<noscript>
+  Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a>
+</noscript>
+
+<script async="" data-ad-client="ca-pub-9792889126704578" src="./Geospatial python tutorial - PyQGIS in Jupyter Notebook_files/f.txt" type="text/javascript"></script>
+<script src="./Geospatial python tutorial - PyQGIS in Jupyter Notebook_files/cookieconsent.min.js.download" data-cfasync="false"></script>
+<script type="text/javascript">
+window.cookieconsent.initialise({
+  "palette": {
+    "popup": {
+      "background": "#216942",
+      "text": "#b2d192"
+    },
+    "button": {
+      "background": "#afed71"
+    }
+  },
+  "theme": "edgeless"
+});
+</script>
+<script defer="" src="./Geospatial python tutorial - PyQGIS in Jupyter Notebook_files/vaafb692b2aea4879b33c060e79fe94621666317369993" integrity="sha512-0ahDYl866UMhKuYcW078ScMalXqtFJggm7TmlUtp0UlD4eQk0Ixfnm5ykXKvGJNFjLMoortdseTfsRT8oCfgGA==" data-cf-beacon="{&quot;rayId&quot;:&quot;7a38e8807cf41539&quot;,&quot;version&quot;:&quot;2023.2.0&quot;,&quot;r&quot;:1,&quot;token&quot;:&quot;e01e27977545487389ad2d2a8f9db60f&quot;,&quot;si&quot;:100}" crossorigin="anonymous"></script>
+
+<hr>
+<footer>
+<container class="w3-container w3-teal">
+<div style="text-align:center">
+<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons Licence" style="border-width:0" src="./Geospatial python tutorial - PyQGIS in Jupyter Notebook_files/88x31.png" width="60px"></a>
+<p>Contents in this website are my personal view, which does not reflect or represent my current or previous employer.</p>
+<p>
+© 2022 Lerry William - Powered by <a href="https://jekyllrb.com/"><img src="./Geospatial python tutorial - PyQGIS in Jupyter Notebook_files/logonav.png" width="30px"></a>
+</p>
+</div>
+</container>
+</footer>
+
+</body></html>

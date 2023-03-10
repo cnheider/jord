@@ -3,7 +3,6 @@
 
 import datetime
 import os
-from pathlib import Path
 from warnings import warn
 
 import pkg_resources
@@ -11,11 +10,11 @@ from apppath import AppPath
 
 __project__ = "Jord"
 __author__ = "Christian Heider Nielsen"
-__version__ = "0.0.4"
+__version__ = "0.0.5"
 __doc__ = r"""
 .. module:: jord
    :platform: Unix, Windows
-   :synopsis: A set of general tools build for .
+   :synopsis: A set of general tools build for geo data.
 
 .. moduleauthor:: Christian Heider Nielsen <christian.heider@alexandra.dk>
 
@@ -23,6 +22,11 @@ Created on 27/04/2019
 
 @author: cnheider
 """
+
+from pathlib import Path
+
+with open(Path(__file__).parent / "README.md", "r") as this_init_file:
+    __doc__ += this_init_file.read()
 
 # __all__ = ['PROJECT_APP_PATH', 'PROJECT_NAME', 'PROJECT_VERSION', 'get_version']
 

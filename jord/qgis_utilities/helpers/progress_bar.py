@@ -1,6 +1,15 @@
-from qgis.PyQt import QtGui
-from qgis.PyQt import QtWidgets
-from typing import List, Tuple
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+__author__ = "Christian Heider Nielsen"
+__doc__ = r"""
+
+           Created on 02-12-2020
+           """
+
+from typing import Tuple
+
+from qgis.PyQt import QtGui, QtWidgets
 
 __all__ = ["dialog_progress_bar"]
 
@@ -12,8 +21,11 @@ def dialog_progress_bar(
     Create a progress bar dialog.
 
     :param progress: The progress to display.
+    :type progress: int
     :param minimum_width: The minimum width of the dialog.
+    :type minimum_width: int
     :return: The dialog.
+    :rtype: Tuple[QtWidgets.QDialog, QtWidgets.QProgressBar]
     """
     dialog = QtGui.QProgressDialog()
     dialog.setWindowTitle("Progress")
