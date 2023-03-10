@@ -7,9 +7,17 @@ __doc__ = r"""
            Created on 02-12-2020
            """
 
+from typing import Sequence
+
 import numpy
+from PIL import Image
 from qgis.PyQt import QtGui
-from qgis.core import QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsPoint
+from qgis.core import (
+    QgsCoordinateReferenceSystem,
+    QgsCoordinateTransform,
+    QgsPoint,
+    QgsVectorLayer,
+)
 
 __all__ = [
     "get_qimage_from_numpy",
@@ -18,7 +26,7 @@ __all__ = [
 ]
 
 
-def get_qimage_from_numpy(img, debug: bool = False) -> QtGui.QImage:
+def get_qimage_from_numpy(img: Image, debug: bool = False) -> QtGui.QImage:
     # if isinstance(img, Image):
     #    img = img.data
     # if isinstance(img, numpy.ndarray):
@@ -30,14 +38,17 @@ def get_qimage_from_numpy(img, debug: bool = False) -> QtGui.QImage:
 
     img = img.data
     height, width, channels = img.shape
+
     if debug:
         print(f"height: {height}, width: {width}, channels: {channels}")
+
     bytes_per_line = channels * width
     img = numpy.require(img, numpy.uint8, "C")
+
     return QtGui.QImage(img, width, height, bytes_per_line, QtGui.QImage.Format_RGB888)
 
 
-def transform_coordinates(coordinates, from_crs, to_crs) -> list:
+def transform_coordinates(coordinates: Sequence, from_crs: str, to_crs: str) -> list:
     """
 
     function to transform a set of coordinates from one CRS to another"""
@@ -62,7 +73,7 @@ def transform_coordinates(coordinates, from_crs, to_crs) -> list:
     ]  # transform the QgsPoint objects back to a list of coordinates
 
 
-def get_coordinates_of_layer_extent(layer) -> list:
+def get_coordinates_of_layer_extent(layer: QgsVectorLayer) -> list:
     """
 
     function to get coordinates of a layer extent

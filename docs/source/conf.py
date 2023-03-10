@@ -30,10 +30,9 @@ sys.path.insert(0, str(PACKAGE_ROOT.absolute()))
 # ones.
 
 extensions = [
-    "sphinxcontrib.programoutput",
+    "sphinx.ext.napoleon",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
-    "sphinx.ext.napoleon",
     "sphinx.ext.doctest",
     "sphinx.ext.intersphinx",
     "sphinx.ext.todo",
@@ -49,6 +48,11 @@ autosummary_generate = True
 # autosummary_imported_members = False
 autosummary_ignore_module_all = False
 autosummary_generate_overwrite = True
+autoclass_content = "both"
+html_show_sourcelink = False
+autodoc_inherit_docstrings = True
+set_type_checking_flag = True
+autodoc_default_flags = ["members"]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["../templates"]
@@ -94,7 +98,12 @@ language = "en"
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ["**/*exclude*", "**/*Exclude*"]
+exclude_patterns = [
+    "**/*exclude*",
+    "**/*Exclude*",
+    "**/*exclude*/**",
+    "**/*Exclude*/**",
+]
 
 # The name of the Pygments (syntax highlighting) style to use.
 highlight_language = "python"
@@ -108,7 +117,7 @@ todo_include_todos = True
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = "alabaster"
+html_theme = "furo"
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -119,8 +128,12 @@ html_theme = "alabaster"
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named 'default.css' will overwrite the builtin 'default.css'.
-html_static_path = ["../../.github/images"]
-html_logo = "../../.github/images/header.svg"
+docs_dir = Path(__file__).parent.parent
+image_dir = docs_dir.parent / ".github" / "images"
+html_static_path = [str(image_dir), str(docs_dir / "style")]
+html_logo = str(image_dir / "header.svg")
+html_css_files = ["custom.css"]
+
 html_theme_options = {
     # "logo_only": True,
     # "display_version": False,

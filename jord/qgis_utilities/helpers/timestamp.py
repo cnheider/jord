@@ -26,6 +26,16 @@ def qt_draw_timestamp(
     font_style: int = QtGui.QFont.StyleNormal,
     font_weight: int = QtGui.QFont.Normal,
 ) -> None:
+    """
+
+    :param image:
+    :param font_size:
+    :param font_color:
+    :param font_family:
+    :param font_style:
+    :param font_weight:
+    :return:
+    """
     timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
     font = QtGui.QFont(font_family, font_size, font_style, font_weight)
     font.setPixelSize(font_size)

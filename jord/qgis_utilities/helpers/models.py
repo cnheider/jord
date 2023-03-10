@@ -30,6 +30,13 @@ class MyTableModel(QtCore.QAbstractTableModel):
     def headerData(
         self, section: int, orientation: QtCore.Qt.Orientation, role: int
     ) -> str:
+        """
+
+        :param section:
+        :param orientation:
+        :param role:
+        :return:
+        """
         if role == QtCore.Qt.DisplayRole:
             if orientation == QtCore.Qt.Horizontal:
                 return f"Column {str(section)}"
@@ -37,14 +44,30 @@ class MyTableModel(QtCore.QAbstractTableModel):
                 return f"Row {str(section)}"
 
     def columnCount(self, parent: Any = None) -> int:
+        """
+
+        :param parent:
+        :return:
+        """
         if self.rowCount():
             return len(self.data[0])
         return 0
 
     def rowCount(self, parent: Any = None) -> int:
+        """
+
+        :param parent:
+        :return:
+        """
         return len(self.data)
 
     def data(self, index: QtCore.QModelIndex, role: int) -> Optional[str]:
+        """
+
+        :param index:
+        :param role:
+        :return:
+        """
         if role == QtCore.Qt.DisplayRole:
             row = index.row()
             col = index.column()

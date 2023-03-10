@@ -9,7 +9,7 @@ __doc__ = r"""
 
 __all__ = ["SilenceGDALSession"]
 
-from osgeo import gdal
+from .importing import GDAL
 from warg import AlsoDecorator
 
 
@@ -23,16 +23,16 @@ class SilenceGDALSession(AlsoDecorator):
         ...
 
     def __enter__(self) -> bool:
-        gdal.PushErrorHandler(
+        GDAL.PushErrorHandler(
             "CPLQuietErrorHandler"
         )  # Stop GDAL printing both warnings and errors to STDERR
-        gdal.UseExceptions()  # Make GDAL raise python exceptions for errors (warnings won't raise an exception)
+        GDAL.UseExceptions()  # Make GDAL raise python exceptions for errors (warnings won't raise an exception)
         return True
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         # gdal.GetUseExceptions()
-        gdal.PopErrorHandler()  # Pop error handler previously pushed
-        gdal.DontUseExceptions()  # Dont use exception anymore
+        GDAL.PopErrorHandler()  # Pop error handler previously pushed
+        GDAL.DontUseExceptions()  # Dont use exception anymore
         # gdal.ErrorReset()
 
 

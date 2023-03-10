@@ -17,7 +17,6 @@ target_folder = (
 )
 
 if False:
-
     qgis_sys_path = Path(target_folder.anchor) / "OSGeo4W" / "apps" / "qgis" / "python"
     import sys
 

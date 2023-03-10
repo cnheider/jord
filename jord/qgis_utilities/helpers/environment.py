@@ -40,11 +40,9 @@ def install_requirements_from_file(requirements_path: Path) -> None:
         pip.main(args)
 
     elif False:
-
         SP_CALLABLE(["pip"] + args)
 
     elif True:
-
         SP_CALLABLE(["python", "-m", "pip"] + args)
 
 
@@ -166,11 +164,9 @@ def install_requirements_from_name(*requirements_name: Iterable[str]) -> None:
         pip.main(args)
 
     elif False:
-
         SP_CALLABLE(["pip"] + args)
     # subprocess.check_call([sys.executable, '-m', 'conda', 'install', '<packagename>'])
     elif True:
-
         interpreter = Path(sys.executable).absolute()
         SP_CALLABLE([str(interpreter), "-m", "pip"] + args)
 
@@ -185,18 +181,15 @@ def remove_requirements_from_name(*requirements_name: Iterable[str]) -> None:
     args = ["uninstall", "-y", *requirements_name]
 
     for _ in range(num_repeat):
-
         if False:
             import pip
 
             pip.main(args)
 
         elif False:
-
             SP_CALLABLE(["pip"] + args)
 
         elif True:
-
             interpreter = Path(sys.executable).absolute()
             SP_CALLABLE(
                 [str(interpreter), "-m", "pip"] + args

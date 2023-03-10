@@ -17,10 +17,10 @@ __all__ = [
 ]
 
 from collections import deque
-from typing import List, Sequence
+from typing import List, Sequence, Union
 
-from shapely import Geometry, Polygon
-from shapely.geometry import LineString, MultiLineString, Point
+from shapely.geometry.base import BaseGeometry, BaseMultipartGeometry
+from shapely.geometry import LineString, MultiLineString, Point, Polygon
 
 
 def split_line_string(line_string: LineString) -> Sequence[LineString]:
@@ -77,7 +77,7 @@ def fix_starting_point(polygon_pieces: Sequence[Polygon]) -> Sequence[Polygon]:
         return polygon_pieces  # We probably cut exactly at the starting point.
 
 
-def adjust_line_end(line: LineString, end: Geometry) -> LineString:
+def adjust_line_end(line: LineString, end: BaseGeometry) -> LineString:
     """Reverse line if necessary to ensure that it ends near end."""
 
     line_start = Point(*line.coords[0])
@@ -89,11 +89,17 @@ def adjust_line_end(line: LineString, end: Geometry) -> LineString:
         return LineString(line.coords[::-1])
 
 
-def ensure_list_of_geometries(thing: Geometry) -> List[Geometry]:
-    try:  # Not MultiGeometry base class for shapely
+def ensure_list_of_geometries(
+    thing: Union[BaseGeometry, BaseMultipartGeometry]
+) -> List[BaseGeometry]:
+    if False:
+        try:  # Not MultiGeometry base class for shapely
+            return list(thing.geoms)
+        except AttributeError:
+            return [thing]
+    if isinstance(thing, BaseMultipartGeometry):
         return list(thing.geoms)
-    except AttributeError:
-        return [thing]
+    return [thing]
 
 
 def clamp_linestring_to_polygon(

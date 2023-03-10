@@ -21,8 +21,11 @@ def dialog_progress_bar(
     Create a progress bar dialog.
 
     :param progress: The progress to display.
+    :type progress: int
     :param minimum_width: The minimum width of the dialog.
+    :type minimum_width: int
     :return: The dialog.
+    :rtype: Tuple[QtWidgets.QDialog, QtWidgets.QProgressBar]
     """
     dialog = QtGui.QProgressDialog()
     dialog.setWindowTitle("Progress")

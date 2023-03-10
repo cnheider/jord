@@ -7,12 +7,8 @@ __doc__ = r"""
            Created on 1/23/23
            """
 
-__all__ = []
-
-
-def _main():
-    ...
-
-
-if __name__ == "__main__":
-    _main()
+from .lines import *
+from .clamp import *
+from .serialisation import *
+from .morphology import *
+from .sanitise_poly import *
