@@ -1,6 +1,5 @@
-from warg import AlsoDecorator
 from qgis.core import QgsMapLayer
-
+from warg import AlsoDecorator
 
 __all__ = ["QLayerEditSession"]
 

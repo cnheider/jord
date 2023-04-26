@@ -9,8 +9,9 @@ __doc__ = r"""
 
 __all__ = ["SilenceGDALSession"]
 
-from .importing import GDAL
 from warg import AlsoDecorator
+
+from .importing import GDAL
 
 
 class SilenceGDALSession(AlsoDecorator):

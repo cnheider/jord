@@ -66,11 +66,9 @@ else:
 
 def get_version(append_time: Any = DEVELOP) -> str:
     """
+      :param append_time:
 
-    Args:
-      append_time:
-
-    Returns:
+    :rtype: str
 
     """
     version = __version__

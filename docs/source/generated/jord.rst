@@ -37,6 +37,7 @@
    :recursive:
 
    jord.gdal_utilities
+   jord.geojson_utilities
    jord.pillow_utilities
    jord.qgis_utilities
    jord.rasterio_utilities

@@ -4,6 +4,12 @@ __all__ = ["closing", "opening", "erode", "erosion", "dilate", "dilation", "clos
 
 
 def erosion(geom: BaseGeometry, eps: float = 1e-7) -> BaseGeometry:
+    """
+
+    :param geom:
+    :param eps:
+    :return:
+    """
     return geom.buffer(-eps)
 
 
@@ -11,6 +17,12 @@ erode = erosion
 
 
 def dilation(geom: BaseGeometry, eps: float = 1e-7) -> BaseGeometry:
+    """
+
+    :param geom:
+    :param eps:
+    :return:
+    """
     return geom.buffer(eps)
 
 
@@ -18,6 +30,12 @@ dilate = dilation
 
 
 def closing(geom: BaseGeometry, eps: float = 1e-7) -> BaseGeometry:
+    """
+
+    :param geom:
+    :param eps:
+    :return:
+    """
     return erode(dilate(geom, eps), eps)
 
 
@@ -25,6 +43,12 @@ close = closing
 
 
 def opening(geom: BaseGeometry, eps: float = 1e-7) -> BaseGeometry:
+    """
+
+    :param geom:
+    :param eps:
+    :return:
+    """
     return dilate(erode(geom, eps), eps)
 
 
@@ -34,7 +58,7 @@ if __name__ == "__main__":
 
     def aishdjauisd():
         # Import constructors for creating geometry collections
-        from shapely.geometry import MultiPoint, MultiLineString, MultiPolygon
+        from shapely.geometry import MultiPoint, MultiLineString
 
         # Import necessary geometric objects from shapely module
         from shapely.geometry import Point, LineString, Polygon

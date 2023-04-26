@@ -19,17 +19,27 @@ __all__ = [
 from collections import deque
 from typing import List, Sequence, Union
 
-from shapely.geometry.base import BaseGeometry, BaseMultipartGeometry
 from shapely.geometry import LineString, MultiLineString, Point, Polygon
+from shapely.geometry.base import BaseGeometry, BaseMultipartGeometry
 
 
 def split_line_string(line_string: LineString) -> Sequence[LineString]:
-    """Break a LineString"""
+    """
+    Break a LineString
+
+    :param line_string:
+    :return:
+    """
     for start, end in zip(line_string.coords[:-1], line_string.coords[1:]):
         yield LineString((start, end))
 
 
 def unsplit_line_string(segments: Sequence[LineString]) -> LineString:
+    """
+
+    :param segments:
+    :return:
+    """
     coords = [segments[0].coords[0]]
 
     for segment in segments:
@@ -39,7 +49,12 @@ def unsplit_line_string(segments: Sequence[LineString]) -> LineString:
 
 
 def extend_segment(line_string: LineString) -> LineString:
-    """Move a line segment's start and end away from each other to ensure intersections."""
+    """
+    Move a line segment's start and end away from each other to ensure intersections
+
+    :param line_string:
+    :return:
+    """
     p0 = line_string.coords[0]
     p1 = line_string.coords[1]
 
@@ -55,7 +70,8 @@ def extend_segment(line_string: LineString) -> LineString:
 
 
 def fix_starting_point(polygon_pieces: Sequence[Polygon]) -> Sequence[Polygon]:
-    """Reconnect the starting point of a polygon's pieces.
+    """
+    Reconnect the starting point of a polygon's pieces.
     When splitting a polygon with two lines, we want to get two pieces.
     However, that's not quite how Shapely works.  The outline of the
     polygon is a LinearRing that starts and ends at the same place, but
@@ -63,6 +79,10 @@ def fix_starting_point(polygon_pieces: Sequence[Polygon]) -> Sequence[Polygon]:
     too.
     We don't want that third piece, so we'll reconnect the segments that
     touch the starting point.
+
+
+    :param polygon_pieces:
+    :return:
     """
 
     if len(polygon_pieces) == 3:
@@ -78,7 +98,13 @@ def fix_starting_point(polygon_pieces: Sequence[Polygon]) -> Sequence[Polygon]:
 
 
 def adjust_line_end(line: LineString, end: BaseGeometry) -> LineString:
-    """Reverse line if necessary to ensure that it ends near end."""
+    """
+    Reverse line if necessary to ensure that it ends near end.
+
+    :param line:
+    :param end:
+    :return:
+    """
 
     line_start = Point(*line.coords[0])
     line_end = Point(*line.coords[-1])
@@ -92,6 +118,11 @@ def adjust_line_end(line: LineString, end: BaseGeometry) -> LineString:
 def ensure_list_of_geometries(
     thing: Union[BaseGeometry, BaseMultipartGeometry]
 ) -> List[BaseGeometry]:
+    """
+
+    :param thing:
+    :return:
+    """
     if False:
         try:  # Not MultiGeometry base class for shapely
             return list(thing.geoms)
@@ -105,6 +136,12 @@ def ensure_list_of_geometries(
 def clamp_linestring_to_polygon(
     line_string: LineString, polygon: Polygon
 ) -> LineString:
+    """
+
+    :param line_string:
+    :param polygon:
+    :return:
+    """
     segments = deque(split_line_string(line_string))
     result = []
     exiting_segment = None
@@ -205,7 +242,7 @@ def clamp_linestring_to_polygon(
 if __name__ == "__main__":
 
     def _main():
-        from draugr.numpy_utilities.space_filling import HilbertCurve
+        from draugr.numpy_utilities import HilbertCurve
         from geopandas import GeoSeries
         from matplotlib import pyplot
 

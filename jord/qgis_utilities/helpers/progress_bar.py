@@ -30,12 +30,15 @@ def dialog_progress_bar(
     dialog = QtGui.QProgressDialog()
     dialog.setWindowTitle("Progress")
     dialog.setLabelText("text")
+
     bar = QtWidgets.QProgressBar(dialog)
     bar.setTextVisible(True)
     bar.setValue(progress)
+
     dialog.setBar(bar)
     dialog.setMinimumWidth(minimum_width)
     dialog.show()
+
     return dialog, bar
 
 

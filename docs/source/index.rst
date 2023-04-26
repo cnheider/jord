@@ -1,5 +1,5 @@
 |organisation| |project| Documentation
-==================
+======================================
 
 Version: |version| |today|
 
@@ -22,7 +22,6 @@ What's next?
 -------------
 
 Read the :ref:`Getting Started Guide <getting_started>`
-
 
 
 Indices and tables

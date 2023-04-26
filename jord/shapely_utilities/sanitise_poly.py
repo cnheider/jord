@@ -1,8 +1,6 @@
 from typing import Union
 
-
 from shapely.geometry.base import BaseGeometry
-from shapely.geometry import MultiPolygon, LineString, Polygon, Point
 
 __all__ = ["zero_buffer", "sanitise", "deflimmer"]
 
@@ -23,6 +21,9 @@ def zero_buffer(
 
 def deflimmer(geom: BaseGeometry, eps: float = 1e-7) -> BaseGeometry:
     return opening(closing(geom, eps), eps)
+
+
+clean_geometry = unflimmer = deflimmer
 
 
 def std_dev_line_length():
@@ -59,7 +60,7 @@ if __name__ == "__main__":
 
     def aishdjauisd():
         # Import constructors for creating geometry collections
-        from shapely.geometry import MultiPoint, MultiLineString, MultiPolygon
+        from shapely.geometry import MultiPoint, MultiLineString
 
         # Import necessary geometric objects from shapely module
         from shapely.geometry import Point, LineString, Polygon

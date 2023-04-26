@@ -7,12 +7,10 @@ from typing import List, Sequence, Union
 from setuptools import find_packages, setup
 
 
-def python_version_check(major: int = 3, minor: int = 7):
+def python_version_check(major: int = 3, minor: int = 7) -> None:
     """
-
-    Args:
-      major:
-      minor:
+      :param major:
+    :param minor:
     """
     import sys
 
@@ -77,6 +75,7 @@ with open(Path(__file__).parent / "jord" / "__init__.py", "r") as project_init_f
     version = re.search(rf"__version__ = {str_reg_exp}", content, re.M).group(1)
     project_name = re.search(rf"__project__ = {str_reg_exp}", content, re.M).group(1)
     author = re.search(rf"__author__ = {str_reg_exp}", content, re.M).group(1)
+
 __author__ = author
 
 
@@ -93,7 +92,7 @@ class JordPackage:
     def setup_dependencies(self) -> list:
         """
 
-        Returns:
+        :return: requirements
 
         """
         return read_reqs(
