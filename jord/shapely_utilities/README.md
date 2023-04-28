@@ -1,1 +1,1 @@
-# jord/qgis_utilities
+# jord/shapely_utilities

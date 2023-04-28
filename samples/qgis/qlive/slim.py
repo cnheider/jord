@@ -1,5 +1,5 @@
 import zmq
-
+import numpy
 from jord.qlive_utilities.serialisation import build_package
 from jord.qlive_utilities.procedures import QliveRPCMethodEnum
 
@@ -7,7 +7,7 @@ context = zmq.Context()
 
 socket = context.socket(zmq.REQ)
 
-socket.connect("tcp://localhost:5555")
+socket.connect("tcp://localhost:5556")
 
 DEFAULT_CRS = "EPSG:3857"  # "EPSG:4326"
 crs = DEFAULT_CRS
@@ -17,21 +17,51 @@ example_wkt_polygon = (
     "-20.1708984375, 38.814697265625 -35.6396484375, 13.502197265625 "
     "-39.1552734375, 10.689697265625 -25.0927734375))"
 )
-example_wkt_polygon2 = "POLYGON ((30 10, 10 20, 20 40, 40 40, 30 10))"
 
 example_wkt_gm = (
     "GEOMETRYCOLLECTION(POINT(0 0), LINESTRING(0 0, 1440 900), POLYGON((0 0, 0 1024, 1024 1024, "
     "1024 0, 0 0)))"
 )
 
-if True:
+
+if False:
     socket.send(build_package(QliveRPCMethodEnum.add_wkt, example_wkt_polygon))
     print("sent")
     message = socket.recv()
     print(message)
 
-if True:
+if False:
     socket.send(build_package(QliveRPCMethodEnum.add_wkt, example_wkt_gm))
+    print("sent")
+    message = socket.recv()
+    print(message)
+
+if True:
+    from PIL import Image
+
+    image = Image.open("exclude/duck_bat.jpg")
+    gray_scale = image.convert("L")
+    raster_ = numpy.asarray(gray_scale)
+    print(raster_.shape)
+
+    if False:
+        from matplotlib import pyplot
+
+        pyplot.imshow(raster_, cmap="gray")
+        pyplot.show()
+    else:
+        socket.send(build_package(QliveRPCMethodEnum.add_raster, raster_, "duck_bat"))
+        print("sent")
+        message = socket.recv()
+        print(message)
+
+if False:
+    socket.send(
+        build_package(
+            QliveRPCMethodEnum.add_wkts,
+            {"gm1": example_wkt_gm, "poly1": example_wkt_polygon},
+        )
+    )
     print("sent")
     message = socket.recv()
     print(message)
