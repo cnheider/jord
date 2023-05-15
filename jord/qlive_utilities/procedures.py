@@ -7,22 +7,28 @@ __all__ = ["QliveRPCMethodEnum", "QliveRPCMethodMap"]
 from typing import Mapping, Any, Tuple
 
 import numpy
-from warg import passes_kws_to
+from warg import passes_kws_to, Number
+
 
 APPEND_TIMESTAMP = True
 SKIP_MEMORY_LAYER_CHECK_AT_CLOSE = True
 PIXEL_SIZE = 1
+DEFAULT_NUMBER = 0
 CONTRAST_ENHANCE = True
 DEFAULT_LAYER_NAME = "TemporaryLayer"
-DEFAULT_LAYER_CRS = "EPSG:3857"
+DEFAULT_LAYER_CRS = "EPSG:4326"
+VERBOSE = False
 
 
 def add_raster(
     qgis_instance_handle: Any,
     raster: numpy.ndarray,
     name: str = DEFAULT_LAYER_NAME,
-    centroid: Tuple = None,
+    centroid: Tuple[Number, Number] = None,
+    extent_tuple: Tuple[Number, Number, Number, Number] = None,
+    pixel_size: Tuple[Number, Number] = PIXEL_SIZE,
     crs_str: str = DEFAULT_LAYER_CRS,
+    default_value=DEFAULT_NUMBER,
     field: str = None,
 ) -> None:
     from qgis.core import (
@@ -31,34 +37,57 @@ def add_raster(
         QgsRasterBlock,
         QgsRasterBandStats,
         QgsSingleBandGrayRenderer,
+        QgsMultiBandColorRenderer,
         QgsContrastEnhancement,
         QgsRasterLayer,
         QgsProcessing,
         Qgis,
     )
+    from jord.qgis_utilities.numpy_utilities.data_type import get_qgis_type
     from qgis import processing
+
+    from jord.qgis_utilities.numpy_utilities.data_type import NUMPY_TO_QGIS_TYPE_MAPPING
+
+    x_size, y_size, *rest_size = raster.shape
+
+    if len(rest_size) == 0:
+        raster = numpy.expand_dims(raster, axis=-1)
+
+    *_, num_bands = raster.shape
+
+    data_type = get_qgis_type(raster.dtype).value
 
     extent = QgsRectangle()
 
-    x_size, y_size, *rest_size = raster.shape
-    if centroid is None:
-        centroid = (0, 0)  # (x_size, y_size)
-    raster_half_size = (PIXEL_SIZE * x_size / 2, PIXEL_SIZE * y_size / 2)
+    if extent_tuple:
+        extent.setXMinimum(extent_tuple[0])
+        extent.setYMinimum(extent_tuple[1])
+        extent.setXMaximum(extent_tuple[2])
+        extent.setYMaximum(extent_tuple[3])
+    else:
+        if centroid is None:
+            centroid = (0, 0)  # (x_size, y_size)
 
-    extent.setXMinimum(centroid[0] - raster_half_size[0])
-    extent.setYMinimum(centroid[1] - raster_half_size[1])
-    extent.setXMaximum(centroid[0] + raster_half_size[0])
-    extent.setYMaximum(centroid[1] + raster_half_size[1])
+        raster_half_size = (PIXEL_SIZE * x_size / 2, PIXEL_SIZE * y_size / 2)
 
-    data_type = Qgis.Byte
+        if False:
+            raster_half_size = raster_half_size[1], raster_half_size[0]
+
+        extent.setXMinimum(centroid[0] - raster_half_size[0])
+        extent.setYMinimum(centroid[1] - raster_half_size[1])
+        extent.setXMaximum(centroid[0] + raster_half_size[0])
+        extent.setYMaximum(centroid[1] + raster_half_size[1])
+
     raster_output = processing.run(
         "qgis:createconstantrasterlayer",
         {
             "EXTENT": extent,
             "TARGET_CRS": QgsCoordinateReferenceSystem(crs_str),  # ("EPSG:2180")
-            "PIXEL_SIZE": PIXEL_SIZE,
-            "NUMBER": 0.5,
+            "PIXEL_SIZE": pixel_size,
+            "NUMBER": default_value,
             "OUTPUT_TYPE": data_type.value,
+            "IGNORE_NODATA": True,
+            "OUTPUT_NODATA_VALUE": DEFAULT_NUMBER,
             "OUTPUT": QgsProcessing.TEMPORARY_OUTPUT,
         },
     )["OUTPUT"]
@@ -69,58 +98,84 @@ def add_raster(
     layer = QgsRasterLayer(raster_output, name, "gdal")
     provider = layer.dataProvider()
 
-    w = layer.width()
-    h = layer.height()
+    if False:
+        location = None
+        extent = provider.extent()
+        xres = (extent.width()) / provider.xSize()
+        yres = (extent.height()) / provider.ySize()
+        col = int((location.x() - extent.xMinimum()) / xres)
+        row = int((location.y() - extent.yMinimum()) / yres)
+    elif False:
+        raster_extent = provider.extent()
+        raster_width = provider.xSize()
+        raster_height = provider.ySize()
+        no_data_value = provider.srcNoDataValue(1)
+    else:
+        w = layer.width()
+        h = layer.height()
 
-    data_type = 1  # Qgis.Int16
-    pdt = provider.dataType(data_type)
-    block = QgsRasterBlock(pdt, w, h)
-
-    if len(rest_size) == 0:
-        raster = numpy.expand_dims(raster, axis=-1)
-
-    *_, num_bands = raster.shape
+    provider.setEditable(True)
+    block = QgsRasterBlock(data_type, w, h)
+    # block = provider.block(1, extent, w, h)
 
     for ith_band in range(0, num_bands):
-        if True:
+        if False:
             for i in range(0, w):
                 for j in range(0, h):
                     value = raster[i][j][ith_band]
                     if value == numpy.nan:
+                        block.setIsNoData(i, j)
                         continue
                     value = int(value) * 255
                     block.setValue(i, j, value)
+        elif True:
+            for i in range(0, w):
+                for j in range(0, h):
+                    block.setValue(i, j, raster[i][j][ith_band])
         else:
             block.setData(bytearray(numpy.array(map(lambda x: int(x * 255), raster))))
 
-    if num_bands == 1:
-        provider.setEditable(True)
+        if VERBOSE:
+            print("writing block on band", ith_band + 1)
+
         provider.writeBlock(block, band=ith_band + 1)
-        provider.setEditable(False)
-        provider.reload()
 
+    provider.setEditable(False)
+    provider.reload()
+
+    if num_bands == 1:
         # this is needed for the min and max value to refresh in the layer panel
-        stats = provider.bandStatistics(ith_band + 1, QgsRasterBandStats.All, extent)
-        min = stats.minimumValue
-        max = stats.maximumValue
-
         renderer = layer.renderer()
-        myType = renderer.dataType(1)
-        GrayRenderer = QgsSingleBandGrayRenderer(provider, ith_band + 1)
+
+        gray_renderer = QgsSingleBandGrayRenderer(provider, 1)
 
         if CONTRAST_ENHANCE:
-            contrastEnhancement = QgsContrastEnhancement.StretchToMinimumMaximum
-            myEnhancement = QgsContrastEnhancement()
-            myEnhancement.setContrastEnhancementAlgorithm(contrastEnhancement, True)
-            myEnhancement.setMinimumValue(min)
-            myEnhancement.setMaximumValue(max)
+            stats = provider.bandStatistics(1, QgsRasterBandStats.All, extent)
+            min_value = stats.minimumValue
+            max_value = stats.maximumValue
 
-        layer.setRenderer(GrayRenderer)
+            my_enhancement = QgsContrastEnhancement()
+            my_enhancement.setContrastEnhancementAlgorithm(
+                QgsContrastEnhancement.StretchToMinimumMaximum, True
+            )
+            my_enhancement.setMinimumValue(min_value)
+            my_enhancement.setMaximumValue(max_value)
+            gray_renderer.setContrastEnhancement(my_enhancement)
+
+        layer.setRenderer(gray_renderer)
+    elif num_bands != 4:
+        multi_color_renderer = QgsMultiBandColorRenderer(provider, 1, 2, 3)
+
+        layer.setRenderer(multi_color_renderer)
+        layer.setDefaultContrastEnhancement()
+        layer.triggerRepaint()
+        # iface.legendInterface().refreshLayerSymbology(layer)
     else:
-        ...  # QgsMultiBandColorRenderer
+        multi_color_renderer = QgsMultiBandColorRenderer(provider, 1, 2, 3)
 
-    if CONTRAST_ENHANCE:
-        layer.renderer().setContrastEnhancement(myEnhancement)
+        layer.setRenderer(multi_color_renderer)
+        layer.setDefaultContrastEnhancement()
+        layer.triggerRepaint()
 
     if SKIP_MEMORY_LAYER_CHECK_AT_CLOSE:
         layer.setCustomProperty("skipMemoryLayersCheck", 1)
