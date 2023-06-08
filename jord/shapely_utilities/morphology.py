@@ -83,7 +83,7 @@ if __name__ == "__main__":
 
         from shapely.geometry import GeometryCollection
         from matplotlib import pyplot
-        import geopandas as gpd
+        import geopandas
 
         geoms = GeometryCollection([multi_point, multi_point2, multi_line, polygon])
 
@@ -93,7 +93,7 @@ if __name__ == "__main__":
         geoms = closing(geoms)
         geoms = erode(geoms)
 
-        p = gpd.GeoSeries(geoms)
+        p = geopandas.GeoSeries(geoms)
         p.plot()
         pyplot.show()
 

@@ -60,3 +60,31 @@ with QliveClient("tcp://localhost:5555") as qlive:
                 {"gm1": example_wkt_gm, "poly1": example_wkt_polygon},
             )
         )
+
+    if True:
+        from geopandas import GeoDataFrame
+
+        df = pd.DataFrame(
+            {
+                "City": ["Buenos Aires", "Brasilia", "Santiago", "Bogota", "Caracas"],
+                "Country": ["Argentina", "Brazil", "Chile", "Colombia", "Venezuela"],
+                "Coordinates": [
+                    "POINT(-58.66 -34.58)",
+                    "POINT(-47.91 -15.78)",
+                    "POINT(-70.66 -33.45)",
+                    "POINT(-74.08 4.60)",
+                    "POINT(-66.86 10.48)",
+                ],
+            }
+        )
+        from shapely import wkt
+
+        df["Coordinates"] = geopandas.GeoSeries.from_wkt(df["Coordinates"])
+        data_frame = geopandas.GeoDataFrame(df, geometry="Coordinates")
+
+        socket.send(
+            build_package(
+                QliveRPCMethodEnum.add_dataframe,
+                data_frame,
+            )
+        )

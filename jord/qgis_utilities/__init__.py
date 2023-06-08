@@ -22,6 +22,7 @@ try:
     from .shapely_utilities import *
     from .qlive_utilities import *
     from .conversion import *
+    from .categorisation import *
 except ImportError as ix:
     this_package_name = Path(__file__).parent.name
     print(f"Make sure qgis module is available for {this_package_name}")

@@ -4,11 +4,14 @@ from enum import Enum
 
 __all__ = ["QliveRPCMethodEnum", "QliveRPCMethodMap"]
 
-from typing import Mapping, Any, Tuple
+from typing import Mapping, Any, Tuple, Optional
 
+import geopandas.geodataframe
 import numpy
+import shapely.geometry.base
 from warg import passes_kws_to, Number
-
+from pandas import DataFrame
+from jord.geopandas_utilities import split_on_geom_type
 
 APPEND_TIMESTAMP = True
 SKIP_MEMORY_LAYER_CHECK_AT_CLOSE = True
@@ -41,12 +44,9 @@ def add_raster(
         QgsContrastEnhancement,
         QgsRasterLayer,
         QgsProcessing,
-        Qgis,
     )
     from jord.qgis_utilities.numpy_utilities.data_type import get_qgis_type
     from qgis import processing
-
-    from jord.qgis_utilities.numpy_utilities.data_type import NUMPY_TO_QGIS_TYPE_MAPPING
 
     x_size, y_size, *rest_size = raster.shape
 
@@ -190,13 +190,14 @@ def add_rasters(qgis_instance_handle, rasters: Mapping, **kwargs) -> None:
         add_raster(qgis_instance_handle, raster, name=layer_name, **kwargs)
 
 
-def add_geom(
+def add_geom_layer(
     qgis_instance_handle: Any,
     geom: Any,
-    name=None,
-    crs=None,
+    name: Optional[str] = None,
+    crs: Optional[str] = None,
     fields: Mapping = None,
     index: bool = False,
+    categorise_by_attribute: Optional[str] = None,
 ) -> None:
     """
       crs=definition Defines the coordinate reference system to use for the layer. definition is any string accepted by QgsCoordinateReferenceSystem.createFromString()
@@ -283,18 +284,18 @@ def add_geom(
         qgis_instance_handle.temporary_group.insertLayer(0, layer)
 
 
-@passes_kws_to(add_geom)
+@passes_kws_to(add_geom_layer)
 def add_wkb(qgis_instance_handle: Any, wkb: str, **kwargs) -> None:
     from qgis.core import QgsGeometry
 
-    add_geom(qgis_instance_handle, QgsGeometry.fromWkb(wkb), **kwargs)
+    add_geom_layer(qgis_instance_handle, QgsGeometry.fromWkb(wkb), **kwargs)
 
 
-@passes_kws_to(add_geom)
+@passes_kws_to(add_geom_layer)
 def add_wkt(qgis_instance_handle: Any, wkt: str, **kwargs) -> None:
     from qgis.core import QgsGeometry
 
-    add_geom(qgis_instance_handle, QgsGeometry.fromWkt(wkt), **kwargs)
+    add_geom_layer(qgis_instance_handle, QgsGeometry.fromWkt(wkt), **kwargs)
 
 
 @passes_kws_to(add_wkb)
@@ -307,6 +308,30 @@ def add_wkbs(qgis_instance_handle: Any, wkbs: Mapping, **kwargs) -> None:
 def add_wkts(qgis_instance_handle: Any, wkts: Mapping, **kwargs) -> None:
     for layer_name, wkt in wkts.items():
         add_wkt(qgis_instance_handle, wkt, name=layer_name, **kwargs)
+
+
+@passes_kws_to(add_geom_layer)
+def add_dataframe(qgis_instance_handle: Any, dataframe: DataFrame, **kwargs) -> None:
+    if isinstance(dataframe, geopandas.geodataframe.GeoDataFrame):
+        columns_to_include = ("layer",)
+        geom_dict = split_on_geom_type(dataframe)
+        for df in geom_dict.values():
+            add_geom_layer(qgis_instance_handle, df.to_wkt())
+    elif isinstance(dataframe, DataFrame):
+        geometry_column = "geometry"
+        if isinstance(
+            dataframe[geometry_column][0], shapely.geometry.base.BaseGeometry
+        ):
+            a = dataframe[geometry_column][0]
+            wkts = a.geom_type == "MultiPolygon"
+            # TODO: Implement
+        elif isinstance(dataframe[geometry_column][0], str):
+            wkts = dataframe[geometry_column]
+        else:
+            raise NotImplemented
+
+        for row in wkts:
+            add_geom_layer(qgis_instance_handle, row)
 
 
 def remove_layers(qgis_instance_handle: Any, *args) -> None:
@@ -324,6 +349,7 @@ class QliveRPCMethodEnum(Enum):
     add_wkb = add_wkb.__name__
     add_wkts = add_wkts.__name__
     add_wkbs = add_wkbs.__name__
+    add_dataframe = add_dataframe.__name__
     add_raster = add_raster.__name__
     add_rasters = add_rasters.__name__
     remove_layers = remove_layers.__name__

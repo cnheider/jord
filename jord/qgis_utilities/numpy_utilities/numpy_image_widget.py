@@ -7,10 +7,11 @@ __doc__ = r"""
            Created on 02-12-2020
            """
 
+import numpy
 from qgis.PyQt import QtGui
 from qgis.PyQt.QtCore import QEvent, Qt
 from qgis.gui import QgsPixmapLabel
-
+from typing import Any
 from .conversion import get_qimage_from_numpy
 
 __all__ = ["NumpyImageWidget"]
@@ -19,7 +20,7 @@ __all__ = ["NumpyImageWidget"]
 class NumpyImageWidget(QgsPixmapLabel):
     """solely for the purpose of the maintaining the aspect ratio of the image"""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: Any = None):
         super().__init__(parent)
         # self.setScaledContents(True)
         # self.setSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
@@ -36,7 +37,7 @@ class NumpyImageWidget(QgsPixmapLabel):
         # self.resize(self.pixmap.width(), self.pixmap.height())
         # self.installEventFilter(self)
 
-    def recalculate_size(self):  # TODO: maybe reset to non scaled img
+    def recalculate_size(self) -> None:  # TODO: maybe reset to non scaled img
         if False:
             self.pixmap = self.pixmap.scaled(
                 self.size(), Qt.KeepAspectRatio, transformMode=Qt.SmoothTransformation
@@ -58,11 +59,11 @@ class NumpyImageWidget(QgsPixmapLabel):
 
         self.setPixmap(self.pixmap)
 
-    def setImage(self, img):
+    def setImage(self, img: numpy.ndarray) -> None:
         self.pixmap = QtGui.QPixmap.fromImage(get_qimage_from_numpy(img))
         self.recalculate_size()
 
-    def eventFilter(self, source, event):
+    def eventFilter(self, source: Any, event: Any) -> Any:
         if source is self and event.type() == QEvent.Resize:
             # print("resize")
             if False:
