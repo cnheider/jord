@@ -1,6 +1,6 @@
 from enum import Enum
 
-from shapely import (
+from shapely.geometry import (
     Point,
     LineString,
     LinearRing,

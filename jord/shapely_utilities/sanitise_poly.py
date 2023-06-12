@@ -68,7 +68,7 @@ def extract_poly_rings(geom: BaseGeometry) -> Tuple[List, List]:
     return exterior_rings, interior_rings
 
 
-def segments(curve: LinearRing | LineString) -> List[LineString]:
+def segments(curve: Union[LinearRing, LineString]) -> List[LineString]:
     return list(map(LineString, zip(curve.coords[:-1], curve.coords[1:])))
 
 

@@ -11,6 +11,7 @@ import numpy
 import shapely.geometry.base
 from warg import passes_kws_to, Number
 from pandas import DataFrame
+from shapely.geometry.base import BaseGeometry
 from jord.geopandas_utilities import split_on_geom_type
 
 APPEND_TIMESTAMP = True
@@ -192,7 +193,7 @@ def add_rasters(qgis_instance_handle, rasters: Mapping, **kwargs) -> None:
 
 def add_geom_layer(
     qgis_instance_handle: Any,
-    geom: Any,
+    geom: BaseGeometry,
     name: Optional[str] = None,
     crs: Optional[str] = None,
     fields: Mapping = None,
@@ -200,20 +201,20 @@ def add_geom_layer(
     categorise_by_attribute: Optional[str] = None,
 ) -> None:
     """
-      crs=definition Defines the coordinate reference system to use for the layer. definition is any string accepted by QgsCoordinateReferenceSystem.createFromString()
 
-    index=yes Specifies that the layer will be constructed with a spatial index
 
-    field=name:type(length,precision) Defines an attribute of the layer. Multiple field parameters can be added to the data provider definition. type is one of “integer”, “double”, “string”.
+
+
+
 
     An example url is “Point?crs=epsg:4326&field=id:integer&field=name:string(20)&index=yes”
 
-      :param fields:
-      :param index:
+      :param fields: Field=name:type(length,precision) Defines an attribute of the layer. Multiple field parameters can be added to the data provider definition. Type is one of “integer”, “double”, “string”.
+      :param index:     index=yes Specifies that the layer will be constructed with a spatial index
       :param qgis_instance_handle:
       :param geom:
       :param name:
-      :param crs:
+      :param crs: Crs=definition Defines the coordinate reference system to use for the layer. Definition is any string accepted by QgsCoordinateReferenceSystem.createFromString()
       :return:"""
 
     from qgis.core import QgsVectorLayer, QgsFeature
@@ -316,7 +317,7 @@ def add_dataframe(qgis_instance_handle: Any, dataframe: DataFrame, **kwargs) -> 
         columns_to_include = ("layer",)
         geom_dict = split_on_geom_type(dataframe)
         for df in geom_dict.values():
-            add_geom_layer(qgis_instance_handle, df.to_wkt())
+            add_wkt(qgis_instance_handle, df.to_wkt())
     elif isinstance(dataframe, DataFrame):
         geometry_column = "geometry"
         if isinstance(

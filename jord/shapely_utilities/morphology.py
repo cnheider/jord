@@ -6,9 +6,9 @@ __all__ = ["closing", "opening", "erode", "erosion", "dilate", "dilation", "clos
 def erosion(geom: BaseGeometry, eps: float = 1e-7) -> BaseGeometry:
     """
 
-    :param geom:
-    :param eps:
-    :return:
+    :param geom: The geometry to be eroded
+    :param eps: Erosion amount
+    :return: The eroded geometry
     """
     return geom.buffer(-eps)
 
@@ -19,9 +19,9 @@ erode = erosion
 def dilation(geom: BaseGeometry, eps: float = 1e-7) -> BaseGeometry:
     """
 
-    :param geom:
-    :param eps:
-    :return:
+    :param geom: The geometry to be dilated
+    :param eps: Dilation amount
+    :return: The dilated geometry
     """
     return geom.buffer(eps)
 
@@ -32,9 +32,9 @@ dilate = dilation
 def closing(geom: BaseGeometry, eps: float = 1e-7) -> BaseGeometry:
     """
 
-    :param geom:
-    :param eps:
-    :return:
+    :param geom: The geometry to be closed
+    :param eps: Dilation and Erosion amount
+    :return: The closed geometry
     """
     return erode(dilate(geom, eps), eps)
 
@@ -45,9 +45,9 @@ close = closing
 def opening(geom: BaseGeometry, eps: float = 1e-7) -> BaseGeometry:
     """
 
-    :param geom:
-    :param eps:
-    :return:
+    :param geom: The geometry to be opened
+    :param eps: Erosion and Dilation amount
+    :return: The opened geometry
     """
     return dilate(erode(geom, eps), eps)
 

@@ -1,6 +1,6 @@
 from typing import Sequence
 
-from shapely import Polygon, LineString
+from shapely.geometry import Polygon, LineString
 
 
 def is_2d_translatable():

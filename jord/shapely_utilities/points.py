@@ -1,6 +1,6 @@
 from typing import Sequence, List, Optional
 
-from shapely import LineString, Point, MultiPoint
+from shapely.geometry import LineString, Point, MultiPoint
 
 
 __all__ = ["unique_line_points", "nearest_neighbor_within"]

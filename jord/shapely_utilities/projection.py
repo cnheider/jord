@@ -1,6 +1,6 @@
 from typing import Sequence, Tuple
 
-from shapely import Polygon, Point, LineString
+from shapely.geometry import Polygon, Point, LineString
 from shapely.geometry.base import BaseGeometry
 
 from jord.shapely_utilities import pairs

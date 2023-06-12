@@ -1,4 +1,4 @@
-from shapely import Polygon
+from shapely.geometry import Polygon
 from shapely.ops import clip_by_rect
 
 polygon = Polygon(

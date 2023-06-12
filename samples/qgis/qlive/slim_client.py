@@ -19,8 +19,8 @@ example_wkt_gm = (
     "1024 0, 0 0)))"
 )
 
-with QliveClient("tcp://localhost:5555") as qlive:
-    if True:
+with QliveClient("tcp://localhost:5556") as qlive:
+    if False:
         from PIL import Image
 
         image = Image.open("exclude/mp.png")  # "exclude/duck_bat.jpg")
@@ -54,7 +54,7 @@ with QliveClient("tcp://localhost:5555") as qlive:
             )
 
     if False:
-        socket.send(
+        qlive.send(
             build_package(
                 QliveRPCMethodEnum.add_wkts,
                 {"gm1": example_wkt_gm, "poly1": example_wkt_polygon},
@@ -62,12 +62,14 @@ with QliveClient("tcp://localhost:5555") as qlive:
         )
 
     if True:
-        from geopandas import GeoDataFrame
+        from geopandas import GeoDataFrame, GeoSeries
+        from pandas import DataFrame
 
-        df = pd.DataFrame(
+        df = DataFrame(
             {
                 "City": ["Buenos Aires", "Brasilia", "Santiago", "Bogota", "Caracas"],
                 "Country": ["Argentina", "Brazil", "Chile", "Colombia", "Venezuela"],
+                "layer": ["layer1", "layer2", "layer3", "layer4", "layer5"],
                 "Coordinates": [
                     "POINT(-58.66 -34.58)",
                     "POINT(-47.91 -15.78)",
@@ -79,10 +81,10 @@ with QliveClient("tcp://localhost:5555") as qlive:
         )
         from shapely import wkt
 
-        df["Coordinates"] = geopandas.GeoSeries.from_wkt(df["Coordinates"])
-        data_frame = geopandas.GeoDataFrame(df, geometry="Coordinates")
+        df["Coordinates"] = GeoSeries.from_wkt(df["Coordinates"])
+        data_frame = GeoDataFrame(df, geometry="Coordinates")
 
-        socket.send(
+        qlive.send(
             build_package(
                 QliveRPCMethodEnum.add_dataframe,
                 data_frame,

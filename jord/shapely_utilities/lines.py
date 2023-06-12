@@ -89,7 +89,7 @@ def strip_line_dangles(
     :type dangle_length_threshold: float
     :param iterations:
     :type iterations: int
-    :return:
+    :return: The LineString without dangles shorter than the dangle_length_threshold
     :rtype: LineString
     """
 
@@ -128,8 +128,14 @@ def strip_line_dangles(
     return working_line
 
 
-def line_endpoints(lines: List[LineString] | MultiLineString) -> MultiPoint:
-    """Return list of terminal points from list of LineStrings."""
+def line_endpoints(lines: Union[List[LineString], MultiLineString]) -> MultiPoint:
+    """
+
+    :param lines:
+    :type: Union[List[LineString], MultiLineString]
+    :return: Returns a MultiPoint of terminal points from list of LineStrings.
+    :rtype: MultiPoint
+    """
 
     all_points = []
     if isinstance(lines, MultiLineString):
@@ -225,15 +231,14 @@ def explode_line(line: LineString) -> List[LineString]:
 
 
 def find_isolated_endpoints(
-    lines: Sequence[LineString | MultiLineString],
+    lines: Sequence[Union[LineString, MultiLineString]],
 ) -> Sequence[Point]:
-    """Find endpoints of lines that don't touch another line.
+    """
+    Find endpoints of lines that don't touch another line.
 
-    Args:
-        lines: a list of LineStrings or a MultiLineString
 
-    Returns:
-        A list of line end Points that don't touch any other line of lines
+    :param lines: a list of LineStrings or a MultiLineString
+    :return: A list of line end Points that don't touch any other line of lines
     """
 
     isolated_endpoints = []
@@ -249,8 +254,8 @@ def find_isolated_endpoints(
 
 
 def snappy_endings(
-    lines: LineString | MultiLineString, max_distance: float
-) -> Sequence[LineString | MultiLineString]:
+    lines: Union[LineString, MultiLineString], max_distance: float
+) -> Sequence[Union[LineString, MultiLineString]]:
     """Snap endpoints of lines together if they are at most max_length apart.
 
     Args:
@@ -328,18 +333,17 @@ def bend_towards(line: LineString, where: Point, to: Point) -> LineString:
 def prune_short_lines(
     lines: Sequence[LineString], min_length: float
 ) -> List[LineString]:
-    """Remove lines from a LineString shorter than min_length.
+    """
+    Remove lines from a LineString shorter than min_length.
 
     Deletes all lines from a list of LineStrings or a MultiLineString
     that have a total length of less than min_length. Vertices of touching
     lines are contracted towards the centroid of the removed line.
 
-    Args:
-        lines: list of LineStrings or a MultiLineString
-        min_length: minimum length of a single LineString to be preserved
 
-    Returns:
-        the pruned pandas DataFrame
+    :param lines: list of LineStrings or a MultiLineString
+    :param min_length: minimum length of a single LineString to be preserved
+    :return:  the pruned pandas DataFrame
     """
     pruned_lines = [line for line in lines]  # converts MultiLineString to list
     to_prune = []
@@ -356,13 +360,14 @@ def prune_short_lines(
     return [line for i, line in enumerate(pruned_lines) if i not in to_prune]
 
 
-def linemerge(line_s: LineString | MultiLineString) -> LineString | MultiLineString:
+def linemerge(
+    line_s: Union[LineString, MultiLineString]
+) -> Union[LineString, MultiLineString]:
     """
     Merge list of LineStrings and/or MultiLineStrings.
 
     Given a list of LineStrings and possibly MultiLineStrings, merge all of
     them to a single MultiLineString.
-
 
     :type line_s: LineString|MultiLineString
     :rtype:LineString|MultiLineString
@@ -381,18 +386,17 @@ def linemerge(line_s: LineString | MultiLineString) -> LineString | MultiLineStr
 
 def one_linestring_per_intersection(
     lines: Sequence[LineString],
-) -> LineString | MultiLineString:
-    """Move line endpoints to intersections of line segments.
+) -> Union[LineString, MultiLineString]:
+    """
+    Move line endpoints to intersections of line segments.
 
     Given a list of touching or possibly intersecting LineStrings, return a
-    list LineStrings that have their endpoints at all crossings and
+     list of LineStrings that have their endpoints at all crossings and
     intersecting points and ONLY there.
 
-    Args:
-        a list of LineStrings or a MultiLineString
 
-    Returns:
-        a list of LineStrings
+    :param lines: A list of LineStrings or a MultiLineString
+    :return: a list of LineStrings
     """
     lines_merged = shapely.ops.linemerge(lines)
 
@@ -419,14 +423,13 @@ def intersecting_lines_idx(of: LineString, lines: Sequence[LineString]) -> List[
 
 
 def intersecting_lines(of: LineString, lines: Sequence[LineString]) -> List[LineString]:
-    """Find the indices in a list of LineStrings that touch a given LineString.
+    """
+    Find the indices in a list of LineStrings that touch a given LineString.
 
-    Args:
-        lines: list of LineStrings in which to search for neighbors
-        of: the LineString which must be touched
 
-    Returns:
-        list of indices, so that all lines[indices] touch the LineString of
+    :param of: the LineString which must be touched
+    :param lines: list of LineStrings in which to search for neighbors
+    :return: list of indices, so that all lines[indices] touch the LineString of
     """
     return [line for line in (lines) if line.touches(of)]
 
