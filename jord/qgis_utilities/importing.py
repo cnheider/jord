@@ -16,6 +16,11 @@ from types import ModuleType
 
 
 def import_qgis() -> ModuleType:
+    """
+
+    :return:
+    :rtype: ModuleType
+    """
     try:
         import qgis
 

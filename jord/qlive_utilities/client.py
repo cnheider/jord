@@ -10,9 +10,7 @@ __all__ = ["QliveClient"]
 class QliveClient(AlsoDecorator):
     def __init__(self, addr: str = "tcp://localhost:5555"):
         self.context = zmq.Context()
-
         self.socket = self.context.socket(zmq.REQ)
-
         self.addr = addr
 
     def __enter__(self):

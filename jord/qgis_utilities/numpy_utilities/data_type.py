@@ -82,4 +82,9 @@ NUMPY_TO_QGIS_TYPE_MAPPING = {  # Numpy type         C type      Description
 
 
 def get_qgis_type(dtype: numpy.dtype) -> Any:
+    """
+
+    :param dtype:
+    :return:
+    """
     return NUMPY_TO_QGIS_TYPE_MAPPING[dtype.type]

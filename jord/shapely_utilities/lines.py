@@ -236,8 +236,7 @@ def find_isolated_endpoints(
     """
     Find endpoints of lines that don't touch another line.
 
-
-    :param lines: a list of LineStrings or a MultiLineString
+    :param lines: A list of LineStrings or a MultiLineString
     :return: A list of line end Points that don't touch any other line of lines
     """
 
@@ -256,11 +255,14 @@ def find_isolated_endpoints(
 def snappy_endings(
     lines: Union[LineString, MultiLineString], max_distance: float
 ) -> Sequence[Union[LineString, MultiLineString]]:
-    """Snap endpoints of lines together if they are at most max_length apart.
+    """
+    Snap endpoints of lines together if they are at most max_length apart.
 
-    Args:
-        lines: a list of LineStrings or a MultiLineString
-        max_distance: maximum distance two endpoints may be joined together
+
+    :param lines: A list of LineStrings or a MultiLineString
+    :param max_distance: maximum distance two endpoints may be joined together
+    :return:
+    :rtype: Sequence[Union[LineString, MultiLineString]]
     """
 
     # initialize snapped lines with list of original lines
@@ -299,15 +301,13 @@ def snappy_endings(
 
 
 def bend_towards(line: LineString, where: Point, to: Point) -> LineString:
-    """Move the point where along a line to the point at location to.
+    """
+    Move the point where along a line to the point at location to.
 
-    Args:
-        line: a LineString
-        where: a point ON the line (not necessarily a vertex)
-        to: a point NOT on the line where the nearest vertex will be moved to
-
-    Returns:
-        the modified (bent) line
+    :param line:
+    :param where: a point ON the line (not necessarily a vertex)
+    :param to: a point NOT on the line where the nearest vertex will be moved to
+    :return: the modified (bent) line
     """
 
     if not line.contains(where) and not line.touches(where):
@@ -341,7 +341,7 @@ def prune_short_lines(
     lines are contracted towards the centroid of the removed line.
 
 
-    :param lines: list of LineStrings or a MultiLineString
+    :param lines: List of LineStrings or a MultiLineString
     :param min_length: minimum length of a single LineString to be preserved
     :return:  the pruned pandas DataFrame
     """
@@ -364,7 +364,7 @@ def linemerge(
     line_s: Union[LineString, MultiLineString]
 ) -> Union[LineString, MultiLineString]:
     """
-    Merge list of LineStrings and/or MultiLineStrings.
+    Merge a list of LineStrings and/or MultiLineStrings.
 
     Given a list of LineStrings and possibly MultiLineStrings, merge all of
     them to a single MultiLineString.
@@ -415,9 +415,9 @@ def intersecting_lines_idx(of: LineString, lines: Sequence[LineString]) -> List[
     """Find the indices in a list of LineStrings that touch a given LineString.
 
 
-    :param lines: list of LineStrings in which to search for neighbors
-    :param of: the LineString which must be touched
-    :return: list of indices, so that all lines[indices] touch the LineString of
+    :param lines: List of LineStrings in which to search for neighbors
+    :param of: the LineString, which must be touched
+    :return: a list of indices, so that all lines[indices] touch the LineString of
     """
     return [k for k, line in enumerate(lines) if line.touches(of)]
 
@@ -427,8 +427,8 @@ def intersecting_lines(of: LineString, lines: Sequence[LineString]) -> List[Line
     Find the indices in a list of LineStrings that touch a given LineString.
 
 
-    :param of: the LineString which must be touched
-    :param lines: list of LineStrings in which to search for neighbors
+    :param of: The LineString which must be touched
+    :param lines: List of LineStrings in which to search for neighbors
     :return: list of indices, so that all lines[indices] touch the LineString of
     """
     return [line for line in (lines) if line.touches(of)]

@@ -13,8 +13,8 @@ from pathlib import Path
 
 __all__ = ["install_requirements_from_file", "install_requirements_from_name"]
 
-from typing import Iterable, Tuple
-
+from typing import Iterable, Tuple, Optional
+import os
 from subprocess import check_output
 import sys
 
@@ -58,10 +58,10 @@ def is_requirement_installed(requirement_name: str) -> bool:
 
 
 def requirement_has_version(requirement_name: str) -> bool:
-    return get_requirement_version(requirement_name) != None
+    return get_requirement_version(requirement_name) is not None
 
 
-def get_requirement_version(requirement_name: str) -> str:
+def get_requirement_version(requirement_name: str) -> Optional[str]:
     s = requirement_name.split("==")
     if len(s) == 2:
         return s[-1]
@@ -80,13 +80,20 @@ def get_installed_version(requirement_name: str) -> str:
     return None
 
 
-def get_newest_version(requirement_name: str) -> str:
+def get_newest_version(
+    requirement_name: str,
+    pip_index=os.environ.get("PIP_INDEX_URL", "https://pypi.org/pypi/"),
+) -> str:
+    """
+
+    :param requirement_name:
+    :param pip_index:
+    :return:
+    """
     from pkg_resources import parse_version
-    import os
+
     import json
     from urllib.request import Request, urlopen
-
-    DEFAULT_PIP_INDEX = os.environ.get("PIP_INDEX_URL", "https://pypi.org/pypi/")
 
     def get_charset(headers, default: str = "utf-8"):
         # this is annoying.
@@ -115,12 +122,12 @@ def get_newest_version(requirement_name: str) -> str:
         data = json.loads(decoded_data)
         return data
 
-    def get_data_pypi(name: str, index: str = DEFAULT_PIP_INDEX):
+    def get_data_pypi(name: str, index: str = pip_index):
         uri = f"{index.rstrip('/')}/{name.split('[')[0]}/json"
         data = json_get(uri)
         return data
 
-    def get_versions_pypi(name: str, index: str = DEFAULT_PIP_INDEX):
+    def get_versions_pypi(name: str, index: str = pip_index):
         data = get_data_pypi(name, index)
         version_numbers = sorted(data["releases"], key=parse_version)
         return tuple(version_numbers)
@@ -171,13 +178,17 @@ def install_requirements_from_name(*requirements_name: Iterable[str]) -> None:
         SP_CALLABLE([str(interpreter), "-m", "pip"] + args)
 
 
-def remove_requirements_from_name(*requirements_name: Iterable[str]) -> None:
+def remove_requirements_from_name(
+    *requirements_name: Iterable[str], num_repeat: int = 1
+) -> None:
+    """
+    Multiple colliding versions may be installed at once, (conda, pip, ....)
+
+    :param num_repeat:     Repeat arg let you choose how many times to try to uninstall the packages.
+    :param requirements_name:
+    :return:
     """
 
-    Multiple colliding versions may be installed at once, (conda, pip, ....)
-    Repeat args let you choose how many time to try uninstall the packages.
-    """
-    num_repeat: int = 1
     args = ["uninstall", "-y", *requirements_name]
 
     for _ in range(num_repeat):

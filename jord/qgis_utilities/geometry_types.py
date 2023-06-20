@@ -31,5 +31,5 @@ class FieldTypeEnum:
     string = "string"
 
 
-def construct_layer_uri():
+def construct_layer_uri() -> str:
     return "Point?crs=epsg:4326&field=id:integer&field=name:string(20)&index=yes"

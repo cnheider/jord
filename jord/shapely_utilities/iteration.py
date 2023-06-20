@@ -14,7 +14,7 @@ def pairs(s: Sequence) -> Tuple[Any, Any]:
     http://stackoverflow.com/questions/1257413/1257446#1257446
 
 
-    :param s: an iterable/list
+    :param s: An iterable/list
     :return: Yields a pair of consecutive elements (lst[k], lst[k+1]) of lst. Last call yields (lst[-2], lst[-1]).
     """
     i = iter(s)

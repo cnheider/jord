@@ -23,6 +23,19 @@ DEFAULT_LAYER_NAME = "TemporaryLayer"
 DEFAULT_LAYER_CRS = "EPSG:4326"
 VERBOSE = False
 
+__all__ = [
+    "add_raster",
+    "add_wkb",
+    "add_wkts",
+    "add_wkbs",
+    "add_rasters",
+    "add_wkt",
+    "add_dataframe",
+    "add_geom_layer",
+    "clear_all",
+    "remove_layers",
+]
+
 
 def add_raster(
     qgis_instance_handle: Any,
@@ -35,6 +48,20 @@ def add_raster(
     default_value=DEFAULT_NUMBER,
     field: str = None,
 ) -> None:
+    """
+
+    :param qgis_instance_handle:
+    :param raster:
+    :param name:
+    :param centroid:
+    :param extent_tuple:
+    :param pixel_size:
+    :param crs_str:
+    :param default_value:
+    :param field:
+    :return: None
+    :rtype: None
+    """
     from qgis.core import (
         QgsRectangle,
         QgsCoordinateReferenceSystem,
@@ -187,6 +214,13 @@ def add_raster(
 
 @passes_kws_to(add_raster)
 def add_rasters(qgis_instance_handle, rasters: Mapping, **kwargs) -> None:
+    """
+
+    :param qgis_instance_handle:
+    :param rasters:
+    :param kwargs:
+    :return:
+    """
     for layer_name, raster in rasters.items():
         add_raster(qgis_instance_handle, raster, name=layer_name, **kwargs)
 
@@ -202,11 +236,6 @@ def add_geom_layer(
 ) -> None:
     """
 
-
-
-
-
-
     An example url is “Point?crs=epsg:4326&field=id:integer&field=name:string(20)&index=yes”
 
       :param fields: Field=name:type(length,precision) Defines an attribute of the layer. Multiple field parameters can be added to the data provider definition. Type is one of “integer”, “double”, “string”.
@@ -215,7 +244,9 @@ def add_geom_layer(
       :param geom:
       :param name:
       :param crs: Crs=definition Defines the coordinate reference system to use for the layer. Definition is any string accepted by QgsCoordinateReferenceSystem.createFromString()
-      :return:"""
+      :return: None
+      :rtype: None
+    """
 
     from qgis.core import QgsVectorLayer, QgsFeature
 
@@ -287,6 +318,13 @@ def add_geom_layer(
 
 @passes_kws_to(add_geom_layer)
 def add_wkb(qgis_instance_handle: Any, wkb: str, **kwargs) -> None:
+    """
+
+    :param qgis_instance_handle:
+    :param wkb:
+    :param kwargs:
+    :return:
+    """
     from qgis.core import QgsGeometry
 
     add_geom_layer(qgis_instance_handle, QgsGeometry.fromWkb(wkb), **kwargs)
@@ -294,6 +332,13 @@ def add_wkb(qgis_instance_handle: Any, wkb: str, **kwargs) -> None:
 
 @passes_kws_to(add_geom_layer)
 def add_wkt(qgis_instance_handle: Any, wkt: str, **kwargs) -> None:
+    """
+
+    :param qgis_instance_handle:
+    :param wkt:
+    :param kwargs:
+    :return:
+    """
     from qgis.core import QgsGeometry
 
     add_geom_layer(qgis_instance_handle, QgsGeometry.fromWkt(wkt), **kwargs)
@@ -301,18 +346,39 @@ def add_wkt(qgis_instance_handle: Any, wkt: str, **kwargs) -> None:
 
 @passes_kws_to(add_wkb)
 def add_wkbs(qgis_instance_handle: Any, wkbs: Mapping, **kwargs) -> None:
+    """
+
+    :param qgis_instance_handle:
+    :param wkbs:
+    :param kwargs:
+    :return:
+    """
     for layer_name, wkb in wkbs.items():
         add_wkb(qgis_instance_handle, wkb, name=layer_name, **kwargs)
 
 
 @passes_kws_to(add_wkt)
 def add_wkts(qgis_instance_handle: Any, wkts: Mapping, **kwargs) -> None:
+    """
+
+    :param qgis_instance_handle:
+    :param wkts:
+    :param kwargs:
+    :return:
+    """
     for layer_name, wkt in wkts.items():
         add_wkt(qgis_instance_handle, wkt, name=layer_name, **kwargs)
 
 
 @passes_kws_to(add_geom_layer)
 def add_dataframe(qgis_instance_handle: Any, dataframe: DataFrame, **kwargs) -> None:
+    """
+
+    :param qgis_instance_handle:
+    :param dataframe:
+    :param kwargs:
+    :return:
+    """
     if isinstance(dataframe, geopandas.geodataframe.GeoDataFrame):
         columns_to_include = ("layer",)
         geom_dict = split_on_geom_type(dataframe)
@@ -336,10 +402,21 @@ def add_dataframe(qgis_instance_handle: Any, dataframe: DataFrame, **kwargs) -> 
 
 
 def remove_layers(qgis_instance_handle: Any, *args) -> None:
+    """
+
+    :param qgis_instance_handle:
+    :param args:
+    :return:
+    """
     qgis_instance_handle.on_clear_temporary()
 
 
 def clear_all(qgis_instance_handle: Any) -> None:
+    """
+
+    :param qgis_instance_handle:
+    :return:
+    """
     remove_layers(qgis_instance_handle)
     print("CLEAR ALL!")
 

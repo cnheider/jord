@@ -10,6 +10,15 @@ def build_uri(
     fields: Optional[Mapping[str, str]] = None,
     index: bool = False,
 ) -> str:
+    """
+
+    :param geom:
+    :param crs:
+    :param fields:
+    :param index:
+    :return:
+    :rtype: str
+    """
     uri = json.loads(geom.asJson())["type"]  # As GeoJSON Repr, str dict
 
     if crs:

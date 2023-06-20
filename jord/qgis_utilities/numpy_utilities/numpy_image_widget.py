@@ -38,6 +38,10 @@ class NumpyImageWidget(QgsPixmapLabel):
         # self.installEventFilter(self)
 
     def recalculate_size(self) -> None:  # TODO: maybe reset to non scaled img
+        """
+
+        :return:
+        """
         if False:
             self.pixmap = self.pixmap.scaled(
                 self.size(), Qt.KeepAspectRatio, transformMode=Qt.SmoothTransformation
@@ -60,10 +64,21 @@ class NumpyImageWidget(QgsPixmapLabel):
         self.setPixmap(self.pixmap)
 
     def setImage(self, img: numpy.ndarray) -> None:
+        """
+
+        :param img:
+        :return:
+        """
         self.pixmap = QtGui.QPixmap.fromImage(get_qimage_from_numpy(img))
         self.recalculate_size()
 
     def eventFilter(self, source: Any, event: Any) -> Any:
+        """
+
+        :param source:
+        :param event:
+        :return:
+        """
         if source is self and event.type() == QEvent.Resize:
             # print("resize")
             if False:

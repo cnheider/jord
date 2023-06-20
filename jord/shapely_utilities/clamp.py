@@ -9,7 +9,7 @@ __doc__ = r"""
 
 __all__ = [
     "split_line_string",
-    "unsplit_line_string",
+    "combine_line_string",
     "extend_segment",
     "fix_starting_point",
     "adjust_line_end",
@@ -34,11 +34,12 @@ def split_line_string(line_string: LineString) -> Sequence[LineString]:
         yield LineString((start, end))
 
 
-def unsplit_line_string(segments: Sequence[LineString]) -> LineString:
+def combine_line_string(segments: Sequence[LineString]) -> LineString:
     """
 
     :param segments:
     :return:
+    :rtype: LineString
     """
     coords = [segments[0].coords[0]]
 
@@ -236,7 +237,7 @@ def clamp_linestring_to_polygon(
             )
             segments.appendleft(pieces[0])
 
-    return unsplit_line_string(result)
+    return combine_line_string(result)
 
 
 if __name__ == "__main__":

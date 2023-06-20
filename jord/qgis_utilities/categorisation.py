@@ -1,8 +1,6 @@
-import json
 import random
 from itertools import cycle
-from typing import Any, Generator
-from typing import Iterable, Mapping
+from typing import Any, Iterable, Sized
 
 from PyQt5.Qt import QColor
 from qgis.core import (
@@ -13,31 +11,7 @@ from qgis.core import (
 )
 from warg import TripleNumber
 
-__all__ = ["categorise_layer", "categorise_layer_from_mapping"]
-
-
-def categorise_layer_from_mapping(
-    layer: QgsVectorLayer,
-    color_mapping_all: Mapping,
-    field_name: str = "layer",
-    default_color: TripleNumber = (0, 0, 0),
-) -> None:
-    color_mapping = color_mapping_all[field_name]
-
-    render_categories = []
-    for cat in layer.uniqueValues(layer.fields().indexFromName(field_name)):
-        cat_color = default_color
-        if cat in color_mapping.keys():
-            cat_color = (int(n) for n in color_mapping[cat])
-
-        sym = QgsSymbol.defaultSymbol(layer.geometryType())
-        sym.setColor(QColor(*(cat_color), 255))
-        render_categories.append(
-            QgsRendererCategory(cat, symbol=sym, label=cat, render=True)
-        )
-
-    layer.setRenderer(QgsCategorizedSymbolRenderer(field_name, render_categories))
-    layer.triggerRepaint()
+__all__ = ["categorise_layer"]
 
 
 def random_rgb(mix: TripleNumber = (255, 255, 255)) -> TripleNumber:
@@ -58,9 +32,6 @@ def random_rgba(mix: TripleNumber = (1, 1, 1, 1)) -> TripleNumber:
 def random_color_generator() -> Any:
     while 1:
         yield random_rgb()
-
-
-from typing import Sized
 
 
 def categorise_layer(

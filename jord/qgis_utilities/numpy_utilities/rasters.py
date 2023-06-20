@@ -1,7 +1,15 @@
 import numpy
 
 
-def convert_raster_to_numpy_array(lyr):  # Input: QgsRasterLayer
+def convert_raster_to_numpy_array(lyr) -> numpy.ndarray:
+    """
+
+    # Input: QgsRasterLayer
+
+       :param lyr:
+       :return:
+       :rtype: numpy.ndarray
+    """
     values = []
     provider = lyr.dataProvider()
     block = provider.block(1, lyr.extent(), lyr.width(), lyr.height())
