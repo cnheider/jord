@@ -1,3 +1,5 @@
+from pathlib import Path
+
 try:
     from .enums import *
 except ImportError as ix:

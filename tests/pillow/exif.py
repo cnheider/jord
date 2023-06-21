@@ -9,6 +9,10 @@ __doc__ = r"""
 
 __all__ = []
 
+from warg import ensure_in_sys_path, find_nearest_ancestral_relative
+
+ensure_in_sys_path(find_nearest_ancestral_relative("jord").parent)
+
 from jord.pillow_utilities import EXIF_TAG_IDS
 
 

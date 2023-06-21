@@ -7,9 +7,6 @@ include requirements*.txt # Include requirements
 #recursive-include . *.md
 global-include *.md
 
-
-
-
 # Include the license file
 #include LICENSE.txt
 
