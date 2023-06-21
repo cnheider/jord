@@ -14,6 +14,7 @@ from qgis.PyQt import QtCore
 __all__ = ["MyTableModel"]
 
 
+# noinspection PyPep8Naming
 class MyTableModel(QtCore.QAbstractTableModel):
     """
     A model that can be used to display a table of data.
@@ -29,7 +30,7 @@ class MyTableModel(QtCore.QAbstractTableModel):
 
     def headerData(
         self, section: int, orientation: QtCore.Qt.Orientation, role: int
-    ) -> str:
+    ) -> str:  # Do not rename
         """
 
         :param section:
@@ -43,7 +44,7 @@ class MyTableModel(QtCore.QAbstractTableModel):
             else:
                 return f"Row {str(section)}"
 
-    def columnCount(self, parent: Any = None) -> int:
+    def columnCount(self, parent: Any = None) -> int:  # Do not rename
         """
 
         :param parent:

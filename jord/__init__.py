@@ -3,14 +3,17 @@
 
 import datetime
 import os
+from pathlib import Path
+from typing import Any
 from warnings import warn
 
 import pkg_resources
 from apppath import AppPath
+from warg import dist_is_editable
 
 __project__ = "Jord"
 __author__ = "Christian Heider Nielsen"
-__version__ = "0.0.5"
+__version__ = "0.0.6"
 __doc__ = r"""
 .. module:: jord
    :platform: Unix, Windows
@@ -23,29 +26,8 @@ Created on 27/04/2019
 @author: cnheider
 """
 
-from pathlib import Path
-
 with open(Path(__file__).parent / "README.md", "r") as this_init_file:
     __doc__ += this_init_file.read()
-
-# __all__ = ['PROJECT_APP_PATH', 'PROJECT_NAME', 'PROJECT_VERSION', 'get_version']
-
-
-from typing import Any
-
-
-def dist_is_editable(dist: Any) -> bool:
-    """
-    Return True if given Distribution is an editable installation."""
-    import sys
-    from pathlib import Path
-
-    for path_item in sys.path:
-        egg_link = Path(path_item) / f"{dist.project_name}.egg-link"
-        if egg_link.is_file():
-            return True
-    return False
-
 
 PROJECT_NAME = __project__.lower().strip().replace(" ", "_")
 PROJECT_VERSION = __version__
@@ -66,11 +48,9 @@ else:
 
 def get_version(append_time: Any = DEVELOP) -> str:
     """
+      :param append_time:
 
-    Args:
-      append_time:
-
-    Returns:
+    :rtype: str
 
     """
     version = __version__

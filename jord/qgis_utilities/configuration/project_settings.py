@@ -26,6 +26,12 @@ qgis_project = QgsProject.instance()
 def restore_default_project_settings(
     defaults: Optional[Mapping] = None, *, project_name: str = PROJECT_NAME
 ):
+    """
+
+    :param defaults:
+    :param project_name:
+    :return:
+    """
     if defaults is None:
         defaults = {}
     for key, value in defaults.items():
@@ -33,6 +39,13 @@ def restore_default_project_settings(
 
 
 def store_project_setting(key: str, value: Any, *, project_name: str = PROJECT_NAME):
+    """
+
+    :param key:
+    :param value:
+    :param project_name:
+    :return:
+    """
     if isinstance(value, bool):
         qgis_project.writeEntryBool(project_name, key, value)
     elif isinstance(value, float):
@@ -53,6 +66,15 @@ def read_project_setting(
     defaults: Mapping = None,
     project_name: str = PROJECT_NAME,
 ):
+    """
+
+    :param key:
+    :param type_hint:
+    :param defaults:
+    :param project_name:
+    :return:
+    """
+
     # read values (returns a tuple with the value, and a status boolean
     # which communicates whether the value retrieved could be converted to
     # its type, in these cases a string, an integer, a double and a boolean

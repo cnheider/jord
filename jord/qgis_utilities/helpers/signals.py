@@ -23,7 +23,7 @@ def connect_signal(signal: QtCore.pyqtSignal, new_handler: callable = None) -> N
     :param new_handler:
     :return:
     """
-    if new_handler is not None:  # if newhandler is not None, connect it
+    if new_handler is not None:  # if new_handler is not None, connect it
         signal.connect(new_handler)
     else:
         if IS_DEBUGGING:
@@ -40,7 +40,7 @@ def disconnect_signal(signal: QtCore.pyqtSignal, old_handler: callable = None) -
     """
     if signal is not None:
         try:
-            if old_handler is not None:  # disconnect oldhandler(s)
+            if old_handler is not None:  # disconnect old_handler(s)
                 while True:
                     # the loop is needed for safely disconnecting a specific handler,
                     # because it may have been connected multple times,

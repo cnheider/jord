@@ -7,9 +7,9 @@ __doc__ = r"""
            Created on 5/5/22
            """
 
-__all__ = ["import_gdal", "import_osr", "import_ogr", "GDAL", "OSR", "OGR"]
-
 from types import ModuleType
+
+__all__ = ["import_gdal", "import_osr", "import_ogr", "GDAL", "OSR", "OGR"]
 
 
 def import_gdal() -> ModuleType:

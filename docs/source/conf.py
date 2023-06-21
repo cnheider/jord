@@ -7,6 +7,10 @@ from pathlib import Path
 
 from warg import cprint
 
+PACKAGE_ROOT = Path(__file__).parent.parent.parent
+cprint(PACKAGE_ROOT)
+sys.path.insert(0, str(PACKAGE_ROOT.absolute()))
+
 from jord import (
     PROJECT_AUTHOR,
     PROJECT_NAME,
@@ -14,10 +18,6 @@ from jord import (
     PROJECT_VERSION,
     PROJECT_YEAR,
 )
-
-PACKAGE_ROOT = Path(__file__).parent.parent.parent
-cprint(PACKAGE_ROOT)
-sys.path.insert(0, str(PACKAGE_ROOT.absolute()))
 
 # -- General configuration ------------------------------------------------
 

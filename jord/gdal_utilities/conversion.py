@@ -80,6 +80,7 @@ def copy_gcps_to_file(file: Path, gcps: List[GDAL.GCP]) -> None:
     :type file:
     :param gcps:
     :type gcps:
+    :rtype:None
     """
 
     with GDAL.Open(file, GdalAccessEnum.update.value) as f:
@@ -90,6 +91,8 @@ def copy_gcps_to_file(file: Path, gcps: List[GDAL.GCP]) -> None:
 def geotiff_to_tiff(src: Path, dst: Path) -> None:
     """
     https://gdal.org/user/translate.html
+
+    :rtype: None
     """
     GDAL.Translate(
         dst,
@@ -103,6 +106,8 @@ def geotiff_to_tiff(src: Path, dst: Path) -> None:
 def tiff_to_geotiff(src: Path, dst: Path) -> None:
     """
     https://gdal.org/user/translate.html
+
+    :rtype: None
     """
     GDAL.Translate(
         dst,
