@@ -18,6 +18,8 @@ try:
     from .importing import *
     from .context import *
     from .cloning import *
+    from .persistence import *
+    from .spatial_reference import *
 except ImportError as ix:
     this_package_name = Path(__file__).parent.name
     print(f"Make sure gdal module is available for {this_package_name}")
