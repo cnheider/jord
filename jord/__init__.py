@@ -13,7 +13,7 @@ from warg import dist_is_editable
 
 __project__ = "Jord"
 __author__ = "Christian Heider Nielsen"
-__version__ = "0.0.8"
+__version__ = "0.0.9"
 __doc__ = r"""
 .. module:: jord
    :platform: Unix, Windows
@@ -33,7 +33,7 @@ PROJECT_NAME = __project__.lower().strip().replace(" ", "_")
 PROJECT_VERSION = __version__
 PROJECT_YEAR = 2018
 PROJECT_AUTHOR = __author__.lower().strip().replace(" ", "_")
-PROJECT_ORGANISATION = "Aivclab"
+PROJECT_ORGANISATION = "Automaps"
 PROJECT_APP_PATH = AppPath(app_name=PROJECT_NAME, app_author=PROJECT_AUTHOR)
 PACKAGE_DATA_PATH = Path(pkg_resources.resource_filename(PROJECT_NAME, "data"))
 INCLUDE_PROJECT_READMES = False
@@ -60,7 +60,6 @@ def get_version(append_time: Any = DEVELOP) -> str:
     if append_time:
         now = datetime.datetime.utcnow()
         date_version = now.strftime("%Y%m%d%H%M%S")
-        # date_version = time.time()
 
         if version:
             # Most git tags are prefixed with 'v' (example: v1.2.3) this is
