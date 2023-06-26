@@ -11,12 +11,16 @@ __all__ = [
     "to_lines",
     "to_single_line",
     "explode_line",
+    "explode_lines",
     "strip_multiline_dangles",
     "strip_line_dangles",
+    "azimuth",
+    "linestring_azimuth",
 ]
 
 import collections
-from typing import Union, List, Sequence
+import logging
+from typing import Union, List, Sequence, Iterable
 
 import shapely.ops
 from shapely.geometry import LineString, MultiLineString, Point, MultiPoint, box
@@ -25,6 +29,7 @@ from shapely.geometry.base import BaseGeometry
 from jord.shapely_utilities.points import (
     unique_line_points,
     nearest_neighbor_within,
+    azimuth,
 )
 
 
@@ -215,18 +220,38 @@ def strip_multiline_dangles(
     return working_multi
 
 
-def explode_line(line: LineString) -> List[LineString]:
+def explode_line(line: Union[LineString, MultiLineString]) -> List[LineString]:
     """
 
     :param line:
     :return:
     """
+
+    if isinstance(line, MultiLineString):
+        out = []
+        for ls in line.geoms:
+            out.extend(explode_line(ls))
+        return out
+
     out = []
     for pt1, pt2 in zip(
         line.coords, line.coords[1:]
     ):  # iterate from first cord, iterate from second coords to get
         # endpoints of each segment
         out.append(LineString([pt1, pt2]))
+    return out
+
+
+def explode_lines(
+    lines: Iterable[Union[LineString, MultiLineString]]
+) -> list[LineString]:
+    """
+    :param lines: List of LineStrings or MultiLineStrings to be exploded
+    :return: Exploded LineStrings
+    """
+    out = []
+    for ls in lines:
+        out.extend(explode_line(ls))
     return out
 
 
@@ -434,6 +459,27 @@ def intersecting_lines(of: LineString, lines: Sequence[LineString]) -> List[Line
     return [line for line in (lines) if line.touches(of)]
 
 
+def linestring_azimuth(linestring: LineString, verbose: bool = False) -> float:
+    """
+    # Calculates the angle of a LineString in degrees, meant for linestrings with only two vertices.
+
+    :param verbose:
+    :param linestring: Shapely linestring to get the angle of.
+    :return: modulo_angle: The angle of the linestring, between 0 and 180 degrees
+    """
+    coords = linestring.coords
+    num_coords = len(coords)
+
+    assert num_coords > 1
+
+    if verbose and num_coords > 2:
+        logging.warning(
+            f"Linestring has more than 2 vertices {num_coords}, calculating angle of first and last vertices"
+        )
+
+    return azimuth(Point(coords[0]), Point(coords[-1]))
+
+
 if __name__ == "__main__":
 
     def iashdh():
@@ -450,4 +496,22 @@ if __name__ == "__main__":
 
         print(to_lines(pols))
 
-    ausdh()
+    def juashud():
+        print(
+            explode_lines(
+                [
+                    MultiLineString([[[0, 0], [0, 1]], [[0, 2], [0, 3]]]),
+                    MultiLineString(
+                        [
+                            [[0, 0], [0, 1]],
+                            [[0, 2], [0, 3]],
+                            [[0, 1], [1, 2], [2, 3], [3, 4]],
+                        ]
+                    ),
+                    MultiLineString([[[0, 0], [0, 1]], [[0, 2], [0, 3]]]),
+                ]
+            )
+        )
+
+    juashud()
+    # ausdh()
