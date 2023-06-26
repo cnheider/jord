@@ -1,9 +1,9 @@
 from typing import Sequence, List, Optional
 
+import numpy
 from shapely.geometry import LineString, Point, MultiPoint
 
-
-__all__ = ["unique_line_points", "nearest_neighbor_within"]
+__all__ = ["unique_line_points", "nearest_neighbor_within", "azimuth"]
 
 
 def unique_line_points(lines: Sequence[LineString]) -> List[Point]:
@@ -48,3 +48,23 @@ def nearest_neighbor_within(others: Sequence, point, max_distance) -> Optional[P
         closest_point = interesting_points[distances.index(min(distances))]
 
     return closest_point
+
+
+def azimuth(point1: Point, point2: Point) -> float:
+    """
+    The clockwise angle from North to line of two points
+
+    :param point1:
+    :type point1: Point
+    :param point2:
+    :type point2: Point
+    :return: angle
+    :rtype: float
+    """
+
+    angle = numpy.arctan2(point2.x - point1.x, point2.y - point1.y)
+    # Gets the angle between the first and last coordinate of a linestring
+
+    return (
+        numpy.degrees(angle) if angle >= 0 else numpy.degrees(angle) + 360
+    ) % 180  # Modulo is used on the angle to produce a result between 0 and 180 degrees

@@ -1,4 +1,6 @@
 from shapely.geometry import Polygon
+from matplotlib import pyplot
+import geopandas
 
 # Example polygon with two holes
 inputPolygon = Polygon(
@@ -15,10 +17,6 @@ for i in range(len(inputPolygon.interiors)):
 newPolygon = Polygon(
     polygonExterior, [[pt for pt in inner.coords] for inner in polygonInteriors]
 )
-
-from shapely.geometry import GeometryCollection
-from matplotlib import pyplot
-import geopandas
 
 p = geopandas.GeoSeries(newPolygon)
 p.plot()

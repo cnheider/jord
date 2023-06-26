@@ -1,4 +1,4 @@
-from typing import List, Sequence
+from typing import List, Sequence, Iterable, Union
 from shapely.geometry.base import BaseGeometry
 from shapely.ops import transform
 import pyproj
@@ -7,10 +7,10 @@ __all__ = ["crs_transform_shapely"]
 
 
 def crs_transform_shapely(
-    geoms: Sequence[BaseGeometry],
+    geoms: Union[BaseGeometry, Iterable[BaseGeometry]],
     from_coordinate_system: str,
     to_coordinate_system: str,
-) -> List[BaseGeometry]:
+) -> Union[BaseGeometry, List[BaseGeometry]]:
     """
     Project space geometries from one coordinate system to another
 
@@ -25,5 +25,12 @@ def crs_transform_shapely(
     projection = pyproj.Transformer.from_crs(
         source, destination, always_xy=True
     ).transform
+    #    project = pyproj.Transformer.from_proj(
+    #    pyproj.Proj(init="epsg:4326"),  # source coordinate system
+    #    pyproj.Proj(init="epsg:3857"),  # destination coordinate system
+    # )
 
-    return [transform(projection, geometry) for geometry in geoms]
+    if isinstance(geoms, Iterable):
+        return [transform(projection, geometry) for geometry in geoms]
+
+    return transform(projection, geoms)
