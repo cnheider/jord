@@ -2,17 +2,16 @@ import json
 import time
 from enum import Enum
 
-__all__ = ["QliveRPCMethodEnum", "QliveRPCMethodMap"]
-
 from typing import Mapping, Any, Tuple, Optional
 
-import geopandas.geodataframe
+
 import numpy
 import shapely.geometry.base
 from warg import passes_kws_to, Number
 from pandas import DataFrame
 from shapely.geometry.base import BaseGeometry
-from jord.geopandas_utilities import split_on_geom_type
+from shapely.geometry import GeometryCollection
+
 
 APPEND_TIMESTAMP = True
 SKIP_MEMORY_LAYER_CHECK_AT_CLOSE = True
@@ -31,9 +30,10 @@ __all__ = [
     "add_rasters",
     "add_wkt",
     "add_dataframe",
-    "add_geom_layer",
     "clear_all",
     "remove_layers",
+    "QliveRPCMethodEnum",
+    "QliveRPCMethodMap",
 ]
 
 
@@ -45,7 +45,7 @@ def add_raster(
     extent_tuple: Tuple[Number, Number, Number, Number] = None,
     pixel_size: Tuple[Number, Number] = PIXEL_SIZE,
     crs_str: str = DEFAULT_LAYER_CRS,
-    default_value=DEFAULT_NUMBER,
+    default_value: Number = DEFAULT_NUMBER,
     field: str = None,
 ) -> None:
     """
@@ -225,9 +225,13 @@ def add_rasters(qgis_instance_handle, rasters: Mapping, **kwargs) -> None:
         add_raster(qgis_instance_handle, raster, name=layer_name, **kwargs)
 
 
-def add_geom_layer(
+def add_geometries():
+    ...
+
+
+def add_geometry(
     qgis_instance_handle: Any,
-    geom: BaseGeometry,
+    geom,  #: QgsGeometry,
     name: Optional[str] = None,
     crs: Optional[str] = None,
     fields: Mapping = None,
@@ -293,6 +297,12 @@ def add_geom_layer(
 
             qgis_instance_handle.qgis_project.addMapLayer(sub_layer, False)
             gm_group.insertLayer(0, sub_layer)
+    elif uri == "MultiPoint":
+        ...
+    elif uri == "MultiLineString":
+        ...
+    elif uri == "MultiPolygon":
+        ...
     else:
         if crs:
             uri += f"?crs={crs}"
@@ -316,7 +326,7 @@ def add_geom_layer(
         qgis_instance_handle.temporary_group.insertLayer(0, layer)
 
 
-@passes_kws_to(add_geom_layer)
+@passes_kws_to(add_geometry)
 def add_wkb(qgis_instance_handle: Any, wkb: str, **kwargs) -> None:
     """
 
@@ -327,10 +337,10 @@ def add_wkb(qgis_instance_handle: Any, wkb: str, **kwargs) -> None:
     """
     from qgis.core import QgsGeometry
 
-    add_geom_layer(qgis_instance_handle, QgsGeometry.fromWkb(wkb), **kwargs)
+    add_geometry(qgis_instance_handle, QgsGeometry.fromWkb(wkb), **kwargs)
 
 
-@passes_kws_to(add_geom_layer)
+@passes_kws_to(add_geometry)
 def add_wkt(qgis_instance_handle: Any, wkt: str, **kwargs) -> None:
     """
 
@@ -341,7 +351,7 @@ def add_wkt(qgis_instance_handle: Any, wkt: str, **kwargs) -> None:
     """
     from qgis.core import QgsGeometry
 
-    add_geom_layer(qgis_instance_handle, QgsGeometry.fromWkt(wkt), **kwargs)
+    add_geometry(qgis_instance_handle, QgsGeometry.fromWkt(wkt), **kwargs)
 
 
 @passes_kws_to(add_wkb)
@@ -370,7 +380,7 @@ def add_wkts(qgis_instance_handle: Any, wkts: Mapping, **kwargs) -> None:
         add_wkt(qgis_instance_handle, wkt, name=layer_name, **kwargs)
 
 
-@passes_kws_to(add_geom_layer)
+@passes_kws_to(add_geometry)
 def add_dataframe(qgis_instance_handle: Any, dataframe: DataFrame, **kwargs) -> None:
     """
 
@@ -379,12 +389,21 @@ def add_dataframe(qgis_instance_handle: Any, dataframe: DataFrame, **kwargs) -> 
     :param kwargs:
     :return:
     """
-    if isinstance(dataframe, geopandas.geodataframe.GeoDataFrame):
+    from geopandas import GeoDataFrame
+    from jord.geopandas_utilities import split_on_geom_type
+
+    if isinstance(dataframe, GeoDataFrame):
         columns_to_include = ("layer",)
         geom_dict = split_on_geom_type(dataframe)
         for df in geom_dict.values():
-            add_wkt(qgis_instance_handle, df.to_wkt())
-    elif isinstance(dataframe, DataFrame):
+            if False:
+                for w in df.geometry.to_wkt():
+                    add_wkt(qgis_instance_handle, w)
+            else:
+                for w in df.geometry.to_wkb():
+                    add_wkb(qgis_instance_handle, w)
+
+    elif isinstance(dataframe, DataFrame) and False:
         geometry_column = "geometry"
         if isinstance(
             dataframe[geometry_column][0], shapely.geometry.base.BaseGeometry
@@ -398,7 +417,10 @@ def add_dataframe(qgis_instance_handle: Any, dataframe: DataFrame, **kwargs) -> 
             raise NotImplemented
 
         for row in wkts:
-            add_geom_layer(qgis_instance_handle, row)
+            add_geometry(qgis_instance_handle, row)
+    else:
+        if VERBOSE:
+            print("SKIP!")
 
 
 def remove_layers(qgis_instance_handle: Any, *args) -> None:
@@ -411,27 +433,33 @@ def remove_layers(qgis_instance_handle: Any, *args) -> None:
     qgis_instance_handle.on_clear_temporary()
 
 
-def clear_all(qgis_instance_handle: Any) -> None:
+def clear_all(qgis_instance_handle: Any, *args) -> None:  # TODO: REMOVE THIS!
     """
 
     :param qgis_instance_handle:
     :return:
     """
     remove_layers(qgis_instance_handle)
-    print("CLEAR ALL!")
+    if VERBOSE:
+        print("CLEAR ALL!")
+
+
+def add_shapely(qgis_instance_handle: Any, geom: BaseGeometry, **kwargs) -> None:
+    ...
 
 
 class QliveRPCMethodEnum(Enum):
     # add_layers = add_layers.__name__
+    remove_layers = remove_layers.__name__
+    clear_all = clear_all.__name__
     add_wkt = add_wkt.__name__
     add_wkb = add_wkb.__name__
     add_wkts = add_wkts.__name__
     add_wkbs = add_wkbs.__name__
     add_dataframe = add_dataframe.__name__
+    add_shapely = add_shapely.__name__
     add_raster = add_raster.__name__
     add_rasters = add_rasters.__name__
-    remove_layers = remove_layers.__name__
-    clear_all = clear_all.__name__
 
 
 funcs = locals()  # In local scope for name

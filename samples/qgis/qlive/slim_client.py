@@ -1,9 +1,4 @@
-import zmq
-import numpy
-
 from jord.qlive_utilities.client import QliveClient
-from jord.qlive_utilities.serialisation import build_package
-from jord.qlive_utilities.procedures import QliveRPCMethodEnum
 
 DEFAULT_CRS = "EPSG:3857"  # "EPSG:4326"
 crs = DEFAULT_CRS
@@ -19,7 +14,7 @@ example_wkt_gm = (
     "1024 0, 0 0)))"
 )
 
-with QliveClient("tcp://localhost:5556") as qlive:
+with QliveClient("tcp://localhost:5555") as qlive:
     if False:
         from PIL import Image
 
@@ -79,14 +74,16 @@ with QliveClient("tcp://localhost:5556") as qlive:
                 ],
             }
         )
-        from shapely import wkt
 
         df["Coordinates"] = GeoSeries.from_wkt(df["Coordinates"])
         data_frame = GeoDataFrame(df, geometry="Coordinates")
 
-        qlive.send(
-            build_package(
-                QliveRPCMethodEnum.add_dataframe,
-                data_frame,
+        if False:
+            qlive.send(
+                build_package(
+                    QliveRPCMethodEnum.add_dataframe,
+                    data_frame,
+                )
             )
-        )
+        else:
+            qlive.add_dataframe(data_frame)

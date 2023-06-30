@@ -38,3 +38,7 @@ class ShapelyGeometryTypesEnum(Enum):
     )
 
     geometry_collection = GeometryCollection  # GeometryCollection([geoms]) # A collection of one or more geometries that  may contain more than  one type of geometry.
+
+
+if __name__ == "__main__":
+    print([p.value.__name__ for p in ShapelyGeometryTypesEnum])

@@ -16,6 +16,7 @@ class SerialisationMethodEnum(Enum):
 
 
 SERIALISATION_METHOD = SerialisationMethodEnum.pickle
+VERBOSE = True
 
 
 def build_package(method: QliveRPCMethodEnum, *args) -> bytes:
@@ -25,6 +26,17 @@ def build_package(method: QliveRPCMethodEnum, *args) -> bytes:
     :param args:
     :return:
     """
+    if VERBOSE:
+        print(type(method), method, args)
+
+    if not isinstance(method, QliveRPCMethodEnum):
+        assert method
+        assert isinstance(method, str), method
+        method = QliveRPCMethodEnum(method)
+
+    if VERBOSE:
+        print(type(method.value), method.value, args)
+
     if SERIALISATION_METHOD == SerialisationMethodEnum.pickle:
         return pickle.dumps({"method": method.value, "args": args})
     elif SERIALISATION_METHOD == SERIALISATION_METHOD.json:
@@ -59,4 +71,4 @@ def read_package(package: bytes) -> Tuple[QliveRPCMethodEnum, Sequence[str]]:
 
 
 if __name__ == "__main__":
-    print(read_package(build_package(method=QliveRPCMethodEnum.clear_all)))
+    print(read_package(build_package(method=QliveRPCMethodEnum.add_wkt)))

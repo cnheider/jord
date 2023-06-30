@@ -7,7 +7,7 @@ context = zmq.Context()
 
 socket = context.socket(zmq.REQ)
 
-socket.connect("tcp://localhost:5556")
+socket.connect("tcp://localhost:5555")
 
 DEFAULT_CRS = "EPSG:3857"  # "EPSG:4326"
 crs = DEFAULT_CRS
