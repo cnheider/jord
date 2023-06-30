@@ -38,11 +38,27 @@ class QliveClient(AlsoDecorator):
         self.socket = self.context.socket(zmq.REQ)
         self.addr = addr
 
+    def __enter__(self):
+        self.socket.connect(self.addr)
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.socket.close()
+
+    def send(self, *args) -> Any:
+        self.socket.send(*args)
+        return self.socket.recv()
+
+
+class AutoQliveClient(QliveClient):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
         for method in QliveRPCMethodEnum:
             actual_callable = QliveRPCMethodMap[method]
 
             if False:
-                partial_build_package = partial(build_package, method.value)
+                partial_build_package = partial(build_package, method)
                 if False and partial_satisfied(
                     partial_build_package
                 ):  # TODO: RESOLVE PARTIAL APPLICATION SATISFACTION.
@@ -79,25 +95,13 @@ class QliveClient(AlsoDecorator):
                 rpc_method = lambda *args: self.send(build_package(method, *args))
             else:
 
-                def a(*args):
+                def wrapped(method, *args) -> Callable:
                     return self.send(build_package(method, *args))
 
-                rpc_method = a
+                rpc_method = partial(wrapped, method)
 
             rpc_method.__doc__ = actual_callable.__doc__
-            print(method.value, rpc_method)
             setattr(self, method.value, rpc_method)
-
-    def __enter__(self):
-        self.socket.connect(self.addr)
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.socket.close()
-
-    def send(self, *args) -> Any:
-        self.socket.send(*args)
-        return self.socket.recv()
 
 
 if __name__ == "__main__":
@@ -106,8 +110,7 @@ if __name__ == "__main__":
     # print(QliveClient().clear_all.__doc__)
     # print(QliveClient().__dict__)
     def uahdsuh():
-        with QliveClient() as qlive:
-            print("calling", qlive.add_wkts)
+        with AutoQliveClient() as qlive:
             qlive.add_wkts({"a": "POINT (-66.86 10.48)"})
 
     # QliveClient().add_dataframe(None)

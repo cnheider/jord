@@ -2,7 +2,7 @@ import base64
 import json
 import pickle
 from enum import Enum
-from typing import Tuple, Sequence
+from typing import Tuple, Sequence, Any
 
 __all__ = ["build_package", "read_package"]
 
@@ -16,10 +16,10 @@ class SerialisationMethodEnum(Enum):
 
 
 SERIALISATION_METHOD = SerialisationMethodEnum.pickle
-VERBOSE = True
+VERBOSE = False
 
 
-def build_package(method: QliveRPCMethodEnum, *args) -> bytes:
+def build_package(method: QliveRPCMethodEnum, *args: Any) -> bytes:
     """
 
     :param method:
