@@ -34,9 +34,10 @@ def style_layer_from_mapping(
         cat_color = default_color
         cat_opacity = default_opacity
         cat_width = default_width
+        label = str(cat)
 
         if cat in style_mapping.keys():
-            style = style_mapping[cat]
+            style = style_mapping[label]
             if "color" in style:
                 cat_color = (
                     int(n) for n in style["color"]
@@ -56,7 +57,7 @@ def style_layer_from_mapping(
             print(f"width ignored, symbol is of type: {type(symbol)}")
 
         render_categories.append(
-            QgsRendererCategory(cat, symbol=symbol, label=cat, render=True)
+            QgsRendererCategory(cat, symbol=symbol, label=label, render=True)
         )
 
     layer.setRenderer(QgsCategorizedSymbolRenderer(field_name, render_categories))

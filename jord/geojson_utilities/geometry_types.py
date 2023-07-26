@@ -32,3 +32,7 @@ class GeoJsonGeometryTypesEnum(Enum):
     multi_polygon = MultiPolygon  #
 
     geometry_collection = GeometryCollection  #
+
+
+if __name__ == "__main__":
+    print(GeoJsonGeometryTypesEnum.geometry_collection.value.__name__)

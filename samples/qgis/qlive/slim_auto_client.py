@@ -1,4 +1,5 @@
 from jord.qlive_utilities.client import QliveClient
+from jord.qlive_utilities.clients.auto import AutoQliveClient
 
 DEFAULT_CRS = "EPSG:3857"  # "EPSG:4326"
 crs = DEFAULT_CRS
@@ -14,7 +15,7 @@ example_wkt_gm = (
     "1024 0, 0 0)))"
 )
 
-with QliveClient("tcp://localhost:5555") as qlive:
+with AutoQliveClient("tcp://localhost:5554") as qlive:
     if False:
         from PIL import Image
 
@@ -48,15 +49,12 @@ with QliveClient("tcp://localhost:5555") as qlive:
                 )
             )
 
-    if False:
-        qlive.send(
-            build_package(
-                QliveRPCMethodEnum.add_wkts,
-                {"gm1": example_wkt_gm, "poly1": example_wkt_polygon},
-            )
+    if True:
+        qlive.add_wkts(
+            {"gm1": example_wkt_gm, "poly1": example_wkt_polygon},
         )
 
-    if True:
+    if False:
         from geopandas import GeoDataFrame, GeoSeries
         from pandas import DataFrame
 

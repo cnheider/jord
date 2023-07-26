@@ -1,13 +1,19 @@
-from typing import Any
+from enum import Enum
+from typing import Any, Callable
 
 import zmq
 from warg import AlsoDecorator
 
-
 __all__ = ["QliveClient"]
+
+import inspect
 
 
 class QliveClient(AlsoDecorator):
+    """
+    Client for sending data to qgis instance
+    """
+
     def __init__(self, addr: str = "tcp://localhost:5555"):
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.REQ)

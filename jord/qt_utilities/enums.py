@@ -1,16 +1,17 @@
-__all__ = ["DockWidgetAreaFlag"]
+__all__ = ["DockWidgetAreaFlag", "AlignmentFlag"]
 
 from enum import Flag, Enum
+
 from qgis.PyQt.QtCore import Qt
 
 
 class DockWidgetAreaFlag(Flag):
-    left = Qt.LeftDockWidgetArea  # 	0x1	The left dock area of a QMainWindow.
-    right = Qt.RightDockWidgetArea  # 	0x2	The right dock area of a QMainWindow.
-    top = Qt.TopDockWidgetArea  # 	0x4	The top dock area of a QMainWindow.
-    bottom = Qt.BottomDockWidgetArea  # 	0x8	The bottom dock area of a QMainWindow.
-    all = Qt.AllDockWidgetAreas  # 	DockWidgetArea_Mask	All dock widget areas (default).
-    none = Qt.NoDockWidgetArea  # 	0	No dock widget areas.
+    left = Qt.LeftDockWidgetArea  # 0x1	The left dock area of a QMainWindow.
+    right = Qt.RightDockWidgetArea  # 0x2	The right dock area of a QMainWindow.
+    top = Qt.TopDockWidgetArea  # 0x4	The top dock area of a QMainWindow.
+    bottom = Qt.BottomDockWidgetArea  # 0x8	The bottom dock area of a QMainWindow.
+    all = Qt.AllDockWidgetAreas  # DockWidgetArea_Mask	All dock widget areas (default).
+    none = Qt.NoDockWidgetArea  # 0	No dock widget areas.
 
 
 class DropActionFlag(Flag):
@@ -564,3 +565,13 @@ class KeyEnum(Enum):
     Qt::Key_Exit	0x0102000a
     Qt::Key_Cancel	0x01020001
     """
+
+
+class AlignmentFlag(Flag):
+    left = Qt.AlignLeft
+    right = Qt.AlignRight
+    bottom = Qt.AlignBottom
+    top = Qt.AlignTop
+    center = Qt.AlignCenter
+    horizontal_center = Qt.AlignHCenter
+    vertical_center = Qt.AlignVCenter

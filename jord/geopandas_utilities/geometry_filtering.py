@@ -23,5 +23,6 @@ def split_on_geom_type(
     gdf3 = gdf[gdf.geometry.type=="MultiPolygon"]
     """
     return {
-        t: data_frame[data_frame.geom_type == t.value] for t in ShapelyGeometryTypesEnum
+        t: data_frame[data_frame.geom_type == t.value.__name__]
+        for t in ShapelyGeometryTypesEnum
     }
