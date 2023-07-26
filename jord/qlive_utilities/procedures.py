@@ -30,6 +30,7 @@ __all__ = [
     "add_rasters",
     "add_wkt",
     "add_dataframe",
+    "add_geojson",
     "clear_all",
     "remove_layers",
     "QliveRPCMethodEnum",
@@ -225,7 +226,7 @@ def add_rasters(qgis_instance_handle, rasters: Mapping, **kwargs) -> None:
         add_raster(qgis_instance_handle, raster, name=layer_name, **kwargs)
 
 
-def add_geometries():
+def add_geometries(    qgis_instance_handle: Any):
     ...
 
 
@@ -242,14 +243,14 @@ def add_geometry(
 
     An example url is “Point?crs=epsg:4326&field=id:integer&field=name:string(20)&index=yes”
 
-      :param fields: Field=name:type(length,precision) Defines an attribute of the layer. Multiple field parameters can be added to the data provider definition. Type is one of “integer”, “double”, “string”.
-      :param index:     index=yes Specifies that the layer will be constructed with a spatial index
-      :param qgis_instance_handle:
-      :param geom:
-      :param name:
-      :param crs: Crs=definition Defines the coordinate reference system to use for the layer. Definition is any string accepted by QgsCoordinateReferenceSystem.createFromString()
-      :return: None
-      :rtype: None
+    :param fields: Field=name:type(length,precision) Defines an attribute of the layer. Multiple field parameters can be added to the data provider definition. Type is one of “integer”, “double”, “string”.
+    :param index:     index=yes Specifies that the layer will be constructed with a spatial index
+    :param qgis_instance_handle:
+    :param geom:
+    :param name:
+    :param crs: Crs=definition Defines the coordinate reference system to use for the layer. Definition is any string accepted by QgsCoordinateReferenceSystem.createFromString()
+    :return: None
+    :rtype: None
     """
 
     from qgis.core import QgsVectorLayer, QgsFeature
@@ -258,7 +259,8 @@ def add_geometry(
     # uri = geom.wkbType()
     # uri = geom.wktTypeStr()
 
-    uri = json.loads(geom.asJson())["type"]
+    geom_type = json.loads(geom.asJson())["type"]
+    uri = geom_type
 
     if name is None:
         name = DEFAULT_LAYER_NAME
@@ -270,7 +272,7 @@ def add_geometry(
     if APPEND_TIMESTAMP:
         layer_name += f"_{time.time()}"
 
-    if uri == "GeometryCollection":
+    if geom_type == GeoJsonGeometryTypesEnum.geometry_collection.value.__name__:
         gm_group = qgis_instance_handle.temporary_group.addGroup(layer_name)
 
         for g in geom.asGeometryCollection():  # TODO: Look into recursion?
@@ -297,12 +299,49 @@ def add_geometry(
 
             qgis_instance_handle.qgis_project.addMapLayer(sub_layer, False)
             gm_group.insertLayer(0, sub_layer)
-    elif uri == "MultiPoint":
+    elif geom_type == GeoJsonGeometryTypesEnum.multi_point.value.__name__:
         ...
-    elif uri == "MultiLineString":
+    elif geom_type == GeoJsonGeometryTypesEnum.multi_line_string.value.__name__:
         ...
-    elif uri == "MultiPolygon":
+    elif geom_type == 'CurvePolygon':
         ...
+    elif geom_type == 'MultiSurface':
+        ...
+    elif geom_type == 'CompoundCurve':
+        ...
+    elif geom_type == 'MultiCurve':
+        ...
+    elif geom_type == GeoJsonGeometryTypesEnum.multi_polygon.value.__name__:
+        gm_group = qgis_instance_handle.temporary_group.addGroup(layer_name)
+
+        g = geom
+        uri = json.loads(g.asJson())["type"]
+        sub_type = uri
+
+        if crs:
+            uri += f"?crs={crs}"
+
+        if fields:
+            for k, v in fields.items():
+                uri += f"&field={k}:{v}"
+
+        uri += f'&index={"yes" if index else "no"}'
+
+        sub_layer = QgsVectorLayer(uri, f"{layer_name}_{sub_type}", "memory")
+
+        features = []
+        for g_ in [g]:
+            feat = QgsFeature()
+            feat.setGeometry(g)
+            features.append(feat)
+
+        sub_layer.dataProvider().addFeatures(features)
+
+        if SKIP_MEMORY_LAYER_CHECK_AT_CLOSE:
+            sub_layer.setCustomProperty("skipMemoryLayersCheck", 1)
+
+        qgis_instance_handle.qgis_project.addMapLayer(sub_layer, False)
+        gm_group.insertLayer(0, sub_layer)
     else:
         if crs:
             uri += f"?crs={crs}"
@@ -409,22 +448,36 @@ def add_dataframe(qgis_instance_handle: Any, dataframe: DataFrame, **kwargs) -> 
             dataframe[geometry_column][0], shapely.geometry.base.BaseGeometry
         ):
             a = dataframe[geometry_column][0]
-            wkts = a.geom_type == "MultiPolygon"
-            # TODO: Implement
+            #if a.geom_type == "MultiPolygon":
+
+            wkts = [d.wkt for d in dataframe[geometry_column]]
         elif isinstance(dataframe[geometry_column][0], str):
             wkts = dataframe[geometry_column]
         else:
             raise NotImplemented
 
         for row in wkts:
-            add_geometry(qgis_instance_handle, row)
+            add_wkt(qgis_instance_handle, row)
     else:
         if VERBOSE:
             print("SKIP!")
 
+@passes_kws_to(add_geometry)
+def add_geojson(qgis_instance_handle: Any, geojson: str, **kwargs) -> None:
+    """
+
+    :param qgis_instance_handle:
+    :param dataframe:
+    :param kwargs:
+    :return:
+    """
+    geom = shapely.from_geojson(geojson)
+    add_shapely(geom)
+
 
 def remove_layers(qgis_instance_handle: Any, *args) -> None:
     """
+    clear all the added layers
 
     :param qgis_instance_handle:
     :param args:
@@ -435,6 +488,7 @@ def remove_layers(qgis_instance_handle: Any, *args) -> None:
 
 def clear_all(qgis_instance_handle: Any, *args) -> None:  # TODO: REMOVE THIS!
     """
+    clear all the added layers
 
     :param qgis_instance_handle:
     :return:
@@ -445,7 +499,16 @@ def clear_all(qgis_instance_handle: Any, *args) -> None:  # TODO: REMOVE THIS!
 
 
 def add_shapely(qgis_instance_handle: Any, geom: BaseGeometry, **kwargs) -> None:
-    ...
+    """
+    Add a shapely geometry
+
+    :param qgis_instance_handle:
+    :param args:
+    :return:
+    """
+
+    add_wkt(qgis_instance_handle, geom.wkt)
+
 
 
 class QliveRPCMethodEnum(Enum):
