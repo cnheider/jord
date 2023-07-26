@@ -34,5 +34,5 @@ class GeoJsonGeometryTypesEnum(Enum):
     geometry_collection = GeometryCollection  #
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print(GeoJsonGeometryTypesEnum.geometry_collection.value.__name__)

@@ -51,8 +51,7 @@ with AutoQliveClient("tcp://localhost:5554") as qlive:
 
     if True:
         qlive.add_wkts(
-                {"gm1": example_wkt_gm, "poly1": example_wkt_polygon},
-
+            {"gm1": example_wkt_gm, "poly1": example_wkt_polygon},
         )
 
     if False:

@@ -8,6 +8,7 @@ from typing import Mapping, Any, Tuple, Optional
 import numpy
 import shapely.geometry.base
 from warg import passes_kws_to, Number
+from jord.geojson_utilities import GeoJsonGeometryTypesEnum
 from pandas import DataFrame
 from shapely.geometry.base import BaseGeometry
 from shapely.geometry import GeometryCollection
@@ -226,7 +227,7 @@ def add_rasters(qgis_instance_handle, rasters: Mapping, **kwargs) -> None:
         add_raster(qgis_instance_handle, raster, name=layer_name, **kwargs)
 
 
-def add_geometries(    qgis_instance_handle: Any):
+def add_geometries(qgis_instance_handle: Any):
     ...
 
 
@@ -303,13 +304,13 @@ def add_geometry(
         ...
     elif geom_type == GeoJsonGeometryTypesEnum.multi_line_string.value.__name__:
         ...
-    elif geom_type == 'CurvePolygon':
+    elif geom_type == "CurvePolygon":
         ...
-    elif geom_type == 'MultiSurface':
+    elif geom_type == "MultiSurface":
         ...
-    elif geom_type == 'CompoundCurve':
+    elif geom_type == "CompoundCurve":
         ...
-    elif geom_type == 'MultiCurve':
+    elif geom_type == "MultiCurve":
         ...
     elif geom_type == GeoJsonGeometryTypesEnum.multi_polygon.value.__name__:
         gm_group = qgis_instance_handle.temporary_group.addGroup(layer_name)
@@ -448,7 +449,7 @@ def add_dataframe(qgis_instance_handle: Any, dataframe: DataFrame, **kwargs) -> 
             dataframe[geometry_column][0], shapely.geometry.base.BaseGeometry
         ):
             a = dataframe[geometry_column][0]
-            #if a.geom_type == "MultiPolygon":
+            # if a.geom_type == "MultiPolygon":
 
             wkts = [d.wkt for d in dataframe[geometry_column]]
         elif isinstance(dataframe[geometry_column][0], str):
@@ -461,6 +462,7 @@ def add_dataframe(qgis_instance_handle: Any, dataframe: DataFrame, **kwargs) -> 
     else:
         if VERBOSE:
             print("SKIP!")
+
 
 @passes_kws_to(add_geometry)
 def add_geojson(qgis_instance_handle: Any, geojson: str, **kwargs) -> None:
@@ -508,7 +510,6 @@ def add_shapely(qgis_instance_handle: Any, geom: BaseGeometry, **kwargs) -> None
     """
 
     add_wkt(qgis_instance_handle, geom.wkt)
-
 
 
 class QliveRPCMethodEnum(Enum):

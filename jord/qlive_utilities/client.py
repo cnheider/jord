@@ -29,5 +29,3 @@ class QliveClient(AlsoDecorator):
     def send(self, *args) -> Any:
         self.socket.send(*args)
         return self.socket.recv()
-
-

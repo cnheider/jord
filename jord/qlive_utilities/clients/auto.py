@@ -1,10 +1,17 @@
 from functools import partial
 from typing import Callable
+import inspect
 from enum import Enum
-from jord.qlive_utilities import QliveClient, QliveRPCMethodEnum, QliveRPCMethodMap, build_package
+from jord.qlive_utilities import (
+    QliveClient,
+    QliveRPCMethodEnum,
+    QliveRPCMethodMap,
+    build_package,
+)
 
 
-__all__ = ['AutoQliveClient']
+__all__ = ["AutoQliveClient"]
+
 
 class DisSatisfactionEnum(Enum):
     none = "none"
