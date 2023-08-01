@@ -10,7 +10,10 @@ __doc__ = r"""
 import time
 from typing import Any
 
+# noinspection PyUnresolvedReferences
 from qgis.PyQt import QtGui
+
+# noinspection PyUnresolvedReferences
 from qgis.PyQt.QtCore import Qt
 
 __all__ = ["qt_draw_timestamp"]

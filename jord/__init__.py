@@ -7,13 +7,15 @@ from pathlib import Path
 from typing import Any
 from warnings import warn
 
-import pkg_resources
+from importlib import resources
+from importlib.metadata import PackageNotFoundError
+from warg import package_is_editable
 from apppath import AppPath
 from warg import dist_is_editable
 
 __project__ = "Jord"
 __author__ = "Christian Heider Nielsen"
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 __doc__ = r"""
 .. module:: jord
    :platform: Unix, Windows
@@ -35,14 +37,13 @@ PROJECT_YEAR = 2018
 PROJECT_AUTHOR = __author__.lower().strip().replace(" ", "_")
 PROJECT_ORGANISATION = "Automaps"
 PROJECT_APP_PATH = AppPath(app_name=PROJECT_NAME, app_author=PROJECT_AUTHOR)
-PACKAGE_DATA_PATH = Path(pkg_resources.resource_filename(PROJECT_NAME, "data"))
 INCLUDE_PROJECT_READMES = False
 
-distributions = {v.key: v for v in pkg_resources.working_set}
-if PROJECT_NAME in distributions:
-    distribution = distributions[PROJECT_NAME]
-    DEVELOP = dist_is_editable(distribution)
-else:
+PACKAGE_DATA_PATH = resources.files(PROJECT_NAME) / "data"
+
+try:
+    DEVELOP = package_is_editable(PROJECT_NAME)
+except PackageNotFoundError as e:
     DEVELOP = True
 
 
@@ -96,3 +97,7 @@ if __version__ is None:
     __version__ = get_version(append_time=True)
 
 __version_info__ = tuple(int(segment) for segment in __version__.split("."))
+
+
+if __name__ == "__main__":
+    print(PROJECT_APP_PATH.user_cache)

@@ -1,4 +1,7 @@
+# noinspection PyUnresolvedReferences
 from qgis.core import *  # attach main QGIS library
+
+# noinspection PyUnresolvedReferences
 from qgis.utils import *  # attach main python library
 
 

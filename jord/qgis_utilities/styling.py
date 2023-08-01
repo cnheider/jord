@@ -1,12 +1,9 @@
 from typing import Mapping
 
-from PyQt5.QtGui import QColor
-from warg import TripleNumber
-import random
-from itertools import cycle
-from typing import Any, Iterable, Sized
 
 from PyQt5.Qt import QColor
+
+# noinspection PyUnresolvedReferences
 from qgis.core import (
     QgsVectorLayer,
     QgsSymbol,

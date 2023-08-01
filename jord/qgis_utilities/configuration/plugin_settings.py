@@ -11,7 +11,6 @@ __all__ = ["store_plugin_setting", "read_plugin_setting"]
 
 from typing import Any
 
-from qgis.core import QgsSettings
 
 from jord import PROJECT_NAME
 
@@ -24,6 +23,9 @@ def store_plugin_setting(key: str, value: Any, *, project_name: str = PROJECT_NA
     :param project_name:
     :return:
     """
+    # noinspection PyUnresolvedReferences
+    from qgis.core import QgsSettings
+
     QgsSettings().setValue(f"{project_name}/{key}", value)
 
 
@@ -37,6 +39,9 @@ def read_plugin_setting(
     :param project_name:
     :return:
     """
+    # noinspection PyUnresolvedReferences
+    from qgis.core import QgsSettings
+
     return QgsSettings().value(f"{project_name}/{key}", default_value)
 
 

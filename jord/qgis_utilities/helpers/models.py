@@ -9,6 +9,7 @@ __doc__ = r"""
 
 from typing import Any, Optional, Tuple
 
+# noinspection PyUnresolvedReferences
 from qgis.PyQt import QtCore
 
 __all__ = ["MyTableModel"]

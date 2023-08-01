@@ -1,7 +1,5 @@
 from functools import partial
 from typing import Callable
-import inspect
-from enum import Enum
 from jord.qlive_utilities import (
     QliveClient,
     QliveRPCMethodEnum,
@@ -12,21 +10,7 @@ from jord.qlive_utilities import (
 
 __all__ = ["AutoQliveClient"]
 
-
-class DisSatisfactionEnum(Enum):
-    none = "none"
-    args = "args"
-    kws = "kws"
-    argskws = "argskws"
-
-
-def partial_satisfied(partial_fn: Callable) -> bool:
-    signature = inspect.signature(partial_fn.func)
-    try:
-        signature.bind(*partial_fn.args, **partial_fn.keywords)
-        return True
-    except TypeError:
-        return False
+from jord.qlive_utilities.clients.arguments import partial_satisfied
 
 
 class AutoQliveClient(QliveClient):
