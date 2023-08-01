@@ -16,11 +16,8 @@ __all__ = [
 from logging import warning
 from typing import Any, Mapping, Optional
 
-from qgis.core import QgsProject
 
 from jord import PROJECT_NAME
-
-qgis_project = QgsProject.instance()
 
 
 def restore_default_project_settings(
@@ -46,6 +43,11 @@ def store_project_setting(key: str, value: Any, *, project_name: str = PROJECT_N
     :param project_name:
     :return:
     """
+    # noinspection PyUnresolvedReferences
+    from qgis.core import QgsProject
+
+    qgis_project = QgsProject.instance()
+
     if isinstance(value, bool):
         qgis_project.writeEntryBool(project_name, key, value)
     elif isinstance(value, float):
@@ -74,6 +76,10 @@ def read_project_setting(
     :param project_name:
     :return:
     """
+    # noinspection PyUnresolvedReferences
+    from qgis.core import QgsProject
+
+    qgis_project = QgsProject.instance()
 
     # read values (returns a tuple with the value, and a status boolean
     # which communicates whether the value retrieved could be converted to

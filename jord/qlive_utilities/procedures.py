@@ -1,18 +1,18 @@
-import json
 import time
+import uuid
 from enum import Enum
-
-from typing import Mapping, Any, Tuple, Optional
-
+from typing import Mapping, Any, Tuple
 
 import numpy
 import shapely.geometry.base
-from warg import passes_kws_to, Number
-from jord.geojson_utilities import GeoJsonGeometryTypesEnum
+import tqdm
 from pandas import DataFrame
 from shapely.geometry.base import BaseGeometry
-from shapely.geometry import GeometryCollection
+from warg import ensure_existence
+from warg import passes_kws_to, Number
 
+from jord import PROJECT_APP_PATH
+from jord.qlive_utilities.qgis_layer_creation import add_qgis_geometry
 
 APPEND_TIMESTAMP = True
 SKIP_MEMORY_LAYER_CHECK_AT_CLOSE = True
@@ -25,13 +25,16 @@ VERBOSE = False
 
 __all__ = [
     "add_raster",
-    "add_wkb",
-    "add_wkts",
-    "add_wkbs",
     "add_rasters",
     "add_wkt",
+    "add_wkts",
+    "add_wkb",
+    "add_wkbs",
     "add_dataframe",
+    "add_dataframes",
     "add_geojson",
+    "add_shapely_geometry",
+    "add_shapely_geometries",
     "clear_all",
     "remove_layers",
     "QliveRPCMethodEnum",
@@ -49,8 +52,10 @@ def add_raster(
     crs_str: str = DEFAULT_LAYER_CRS,
     default_value: Number = DEFAULT_NUMBER,
     field: str = None,
+    no_data_value: int = -1,
 ) -> None:
     """
+    add a raster
 
     :param qgis_instance_handle:
     :param raster:
@@ -64,19 +69,20 @@ def add_raster(
     :return: None
     :rtype: None
     """
+    # noinspection PyUnresolvedReferences
     from qgis.core import (
         QgsRectangle,
         QgsCoordinateReferenceSystem,
-        QgsRasterBlock,
         QgsRasterBandStats,
         QgsSingleBandGrayRenderer,
         QgsMultiBandColorRenderer,
         QgsContrastEnhancement,
         QgsRasterLayer,
-        QgsProcessing,
+        QgsRasterFileWriter,
+        Qgis,
     )
     from jord.qgis_utilities.numpy_utilities.data_type import get_qgis_type
-    from qgis import processing
+    from jord.qgis_utilities import RasterDataProviderEditSession
 
     x_size, y_size, *rest_size = raster.shape
 
@@ -108,70 +114,57 @@ def add_raster(
         extent.setXMaximum(centroid[0] + raster_half_size[0])
         extent.setYMaximum(centroid[1] + raster_half_size[1])
 
-    raster_output = processing.run(
-        "qgis:createconstantrasterlayer",
-        {
-            "EXTENT": extent,
-            "TARGET_CRS": QgsCoordinateReferenceSystem(crs_str),  # ("EPSG:2180")
-            "PIXEL_SIZE": pixel_size,
-            "NUMBER": default_value,
-            "OUTPUT_TYPE": data_type.value,
-            "IGNORE_NODATA": True,
-            "OUTPUT_NODATA_VALUE": DEFAULT_NUMBER,
-            "OUTPUT": QgsProcessing.TEMPORARY_OUTPUT,
-        },
-    )["OUTPUT"]
-
     if APPEND_TIMESTAMP:
         name += f"_{time.time()}"
 
-    layer = QgsRasterLayer(raster_output, name, "gdal")
-    provider = layer.dataProvider()
+    temp_file = (
+        ensure_existence(PROJECT_APP_PATH.user_data / "rasters") / f"{uuid.uuid4()}.tif"
+    )
+    writer = QgsRasterFileWriter(temp_file)
+    provider = writer.createMultiBandRaster(
+        dataType=data_type.value,
+        width=x_size,
+        height=y_size,
+        extent=extent,
+        crs=QgsCoordinateReferenceSystem(crs_str),
+        nBands=num_bands,
+    )
 
-    if False:
-        location = None
-        extent = provider.extent()
-        xres = (extent.width()) / provider.xSize()
-        yres = (extent.height()) / provider.ySize()
-        col = int((location.x() - extent.xMinimum()) / xres)
-        row = int((location.y() - extent.yMinimum()) / yres)
-    elif False:
-        raster_extent = provider.extent()
-        raster_width = provider.xSize()
-        raster_height = provider.ySize()
-        no_data_value = provider.srcNoDataValue(1)
-    else:
-        w = layer.width()
-        h = layer.height()
+    if VERBOSE:
+        print("drawing")
 
-    provider.setEditable(True)
-    block = QgsRasterBlock(data_type, w, h)
-    # block = provider.block(1, extent, w, h)
+    w_pixels, h_pixels = x_size, y_size
 
-    for ith_band in range(0, num_bands):
-        if False:
-            for i in range(0, w):
-                for j in range(0, h):
-                    value = raster[i][j][ith_band]
-                    if value == numpy.nan:
-                        block.setIsNoData(i, j)
-                        continue
-                    value = int(value) * 255
-                    block.setValue(i, j, value)
-        elif True:
-            for i in range(0, w):
-                for j in range(0, h):
-                    block.setValue(i, j, raster[i][j][ith_band])
-        else:
-            block.setData(bytearray(numpy.array(map(lambda x: int(x * 255), raster))))
+    with RasterDataProviderEditSession(provider):
+        progress = range(0, num_bands)
 
         if VERBOSE:
-            print("writing block on band", ith_band + 1)
+            progress = tqdm.tqdm(progress)
 
-        provider.writeBlock(block, band=ith_band + 1)
+        for ith_band in progress:
+            block = provider.block(
+                bandNo=ith_band + 1, boundingBox=extent, width=w_pixels, height=h_pixels
+            )
+            provider.setNoDataValue(bandNo=ith_band + 1, noDataValue=no_data_value)
 
-    provider.setEditable(False)
-    provider.reload()
+            for wp in range(0, w_pixels):
+                for hp in range(0, h_pixels):
+                    value = raster[wp][hp][ith_band]
+                    if value == numpy.nan:
+                        block.setIsNoData(wp, hp)
+                        continue
+                    if False:
+                        value = int(value) * 255
+                    block.setValue(wp, hp, value)
+
+            if VERBOSE:
+                print("writing block on band", ith_band + 1)
+
+            provider.writeBlock(block, band=ith_band + 1, xOffset=0, yOffset=0)
+
+            del block
+
+    layer = QgsRasterLayer(temp_file, name, "gdal")
 
     if num_bands == 1:
         # this is needed for the min and max value to refresh in the layer panel
@@ -193,6 +186,7 @@ def add_raster(
             gray_renderer.setContrastEnhancement(my_enhancement)
 
         layer.setRenderer(gray_renderer)
+
     elif num_bands != 4:
         multi_color_renderer = QgsMultiBandColorRenderer(provider, 1, 2, 3)
 
@@ -200,6 +194,7 @@ def add_raster(
         layer.setDefaultContrastEnhancement()
         layer.triggerRepaint()
         # iface.legendInterface().refreshLayerSymbology(layer)
+
     else:
         multi_color_renderer = QgsMultiBandColorRenderer(provider, 1, 2, 3)
 
@@ -227,146 +222,7 @@ def add_rasters(qgis_instance_handle, rasters: Mapping, **kwargs) -> None:
         add_raster(qgis_instance_handle, raster, name=layer_name, **kwargs)
 
 
-def add_geometries(qgis_instance_handle: Any):
-    ...
-
-
-def add_geometry(
-    qgis_instance_handle: Any,
-    geom,  #: QgsGeometry,
-    name: Optional[str] = None,
-    crs: Optional[str] = None,
-    fields: Mapping = None,
-    index: bool = False,
-    categorise_by_attribute: Optional[str] = None,
-) -> None:
-    """
-
-    An example url is “Point?crs=epsg:4326&field=id:integer&field=name:string(20)&index=yes”
-
-    :param fields: Field=name:type(length,precision) Defines an attribute of the layer. Multiple field parameters can be added to the data provider definition. Type is one of “integer”, “double”, “string”.
-    :param index:     index=yes Specifies that the layer will be constructed with a spatial index
-    :param qgis_instance_handle:
-    :param geom:
-    :param name:
-    :param crs: Crs=definition Defines the coordinate reference system to use for the layer. Definition is any string accepted by QgsCoordinateReferenceSystem.createFromString()
-    :return: None
-    :rtype: None
-    """
-
-    from qgis.core import QgsVectorLayer, QgsFeature
-
-    # uri = geom.type()
-    # uri = geom.wkbType()
-    # uri = geom.wktTypeStr()
-
-    geom_type = json.loads(geom.asJson())["type"]
-    uri = geom_type
-
-    if name is None:
-        name = DEFAULT_LAYER_NAME
-
-    if crs is None:
-        crs = DEFAULT_LAYER_CRS
-
-    layer_name = f"{name}"
-    if APPEND_TIMESTAMP:
-        layer_name += f"_{time.time()}"
-
-    if geom_type == GeoJsonGeometryTypesEnum.geometry_collection.value.__name__:
-        gm_group = qgis_instance_handle.temporary_group.addGroup(layer_name)
-
-        for g in geom.asGeometryCollection():  # TODO: Look into recursion?
-            uri = json.loads(g.asJson())["type"]
-            sub_type = uri
-
-            if crs:
-                uri += f"?crs={crs}"
-
-            if fields:
-                for k, v in fields.items():
-                    uri += f"&field={k}:{v}"
-
-            uri += f'&index={"yes" if index else "no"}'
-
-            feat = QgsFeature()
-            feat.setGeometry(g)
-
-            sub_layer = QgsVectorLayer(uri, f"{layer_name}_{sub_type}", "memory")
-            sub_layer.dataProvider().addFeatures([feat])
-
-            if SKIP_MEMORY_LAYER_CHECK_AT_CLOSE:
-                sub_layer.setCustomProperty("skipMemoryLayersCheck", 1)
-
-            qgis_instance_handle.qgis_project.addMapLayer(sub_layer, False)
-            gm_group.insertLayer(0, sub_layer)
-    elif geom_type == GeoJsonGeometryTypesEnum.multi_point.value.__name__:
-        ...
-    elif geom_type == GeoJsonGeometryTypesEnum.multi_line_string.value.__name__:
-        ...
-    elif geom_type == "CurvePolygon":
-        ...
-    elif geom_type == "MultiSurface":
-        ...
-    elif geom_type == "CompoundCurve":
-        ...
-    elif geom_type == "MultiCurve":
-        ...
-    elif geom_type == GeoJsonGeometryTypesEnum.multi_polygon.value.__name__:
-        gm_group = qgis_instance_handle.temporary_group.addGroup(layer_name)
-
-        g = geom
-        uri = json.loads(g.asJson())["type"]
-        sub_type = uri
-
-        if crs:
-            uri += f"?crs={crs}"
-
-        if fields:
-            for k, v in fields.items():
-                uri += f"&field={k}:{v}"
-
-        uri += f'&index={"yes" if index else "no"}'
-
-        sub_layer = QgsVectorLayer(uri, f"{layer_name}_{sub_type}", "memory")
-
-        features = []
-        for g_ in [g]:
-            feat = QgsFeature()
-            feat.setGeometry(g)
-            features.append(feat)
-
-        sub_layer.dataProvider().addFeatures(features)
-
-        if SKIP_MEMORY_LAYER_CHECK_AT_CLOSE:
-            sub_layer.setCustomProperty("skipMemoryLayersCheck", 1)
-
-        qgis_instance_handle.qgis_project.addMapLayer(sub_layer, False)
-        gm_group.insertLayer(0, sub_layer)
-    else:
-        if crs:
-            uri += f"?crs={crs}"
-
-        if fields:
-            for k, v in fields.items():
-                uri += f"&field={k}:{v}"
-
-        uri += f'&index={"yes" if index else "no"}'
-
-        feat = QgsFeature()
-        feat.setGeometry(geom)
-
-        layer = QgsVectorLayer(uri, layer_name, "memory")
-        layer.dataProvider().addFeatures([feat])
-
-        if SKIP_MEMORY_LAYER_CHECK_AT_CLOSE:
-            layer.setCustomProperty("skipMemoryLayersCheck", 1)
-
-        qgis_instance_handle.qgis_project.addMapLayer(layer, False)
-        qgis_instance_handle.temporary_group.insertLayer(0, layer)
-
-
-@passes_kws_to(add_geometry)
+@passes_kws_to(add_qgis_geometry)
 def add_wkb(qgis_instance_handle: Any, wkb: str, **kwargs) -> None:
     """
 
@@ -375,12 +231,13 @@ def add_wkb(qgis_instance_handle: Any, wkb: str, **kwargs) -> None:
     :param kwargs:
     :return:
     """
+    # noinspection PyUnresolvedReferences
     from qgis.core import QgsGeometry
 
-    add_geometry(qgis_instance_handle, QgsGeometry.fromWkb(wkb), **kwargs)
+    add_qgis_geometry(qgis_instance_handle, QgsGeometry.fromWkb(wkb), **kwargs)
 
 
-@passes_kws_to(add_geometry)
+@passes_kws_to(add_qgis_geometry)
 def add_wkt(qgis_instance_handle: Any, wkt: str, **kwargs) -> None:
     """
 
@@ -389,13 +246,14 @@ def add_wkt(qgis_instance_handle: Any, wkt: str, **kwargs) -> None:
     :param kwargs:
     :return:
     """
+    # noinspection PyUnresolvedReferences
     from qgis.core import QgsGeometry
 
-    add_geometry(qgis_instance_handle, QgsGeometry.fromWkt(wkt), **kwargs)
+    add_qgis_geometry(qgis_instance_handle, QgsGeometry.fromWkt(wkt), **kwargs)
 
 
 @passes_kws_to(add_wkb)
-def add_wkbs(qgis_instance_handle: Any, wkbs: Mapping, **kwargs) -> None:
+def add_wkbs(qgis_instance_handle: Any, wkbs: Mapping[str, str], **kwargs) -> None:
     """
 
     :param qgis_instance_handle:
@@ -408,7 +266,7 @@ def add_wkbs(qgis_instance_handle: Any, wkbs: Mapping, **kwargs) -> None:
 
 
 @passes_kws_to(add_wkt)
-def add_wkts(qgis_instance_handle: Any, wkts: Mapping, **kwargs) -> None:
+def add_wkts(qgis_instance_handle: Any, wkts: Mapping[str, str], **kwargs) -> None:
     """
 
     :param qgis_instance_handle:
@@ -420,7 +278,14 @@ def add_wkts(qgis_instance_handle: Any, wkts: Mapping, **kwargs) -> None:
         add_wkt(qgis_instance_handle, wkt, name=layer_name, **kwargs)
 
 
-@passes_kws_to(add_geometry)
+@passes_kws_to(add_qgis_geometry)
+def add_dataframes(
+    qgis_instance_handle: Any, dataframes: Mapping[str, DataFrame], **kwargs
+) -> None:
+    ...
+
+
+@passes_kws_to(add_qgis_geometry)
 def add_dataframe(qgis_instance_handle: Any, dataframe: DataFrame, **kwargs) -> None:
     """
 
@@ -464,7 +329,7 @@ def add_dataframe(qgis_instance_handle: Any, dataframe: DataFrame, **kwargs) -> 
             print("SKIP!")
 
 
-@passes_kws_to(add_geometry)
+@passes_kws_to(add_qgis_geometry)
 def add_geojson(qgis_instance_handle: Any, geojson: str, **kwargs) -> None:
     """
 
@@ -474,7 +339,7 @@ def add_geojson(qgis_instance_handle: Any, geojson: str, **kwargs) -> None:
     :return:
     """
     geom = shapely.from_geojson(geojson)
-    add_shapely(geom)
+    add_shapely_geometry(geom)
 
 
 def remove_layers(qgis_instance_handle: Any, *args) -> None:
@@ -500,7 +365,9 @@ def clear_all(qgis_instance_handle: Any, *args) -> None:  # TODO: REMOVE THIS!
         print("CLEAR ALL!")
 
 
-def add_shapely(qgis_instance_handle: Any, geom: BaseGeometry, **kwargs) -> None:
+def add_shapely_geometry(
+    qgis_instance_handle: Any, geom: BaseGeometry, **kwargs
+) -> None:
     """
     Add a shapely geometry
 
@@ -512,6 +379,21 @@ def add_shapely(qgis_instance_handle: Any, geom: BaseGeometry, **kwargs) -> None
     add_wkt(qgis_instance_handle, geom.wkt)
 
 
+@passes_kws_to(add_shapely_geometry)
+def add_shapely_geometries(
+    qgis_instance_handle: Any, geometries: Mapping, **kwargs
+) -> None:
+    """
+
+    :param qgis_instance_handle:
+    :param wkbs:
+    :param kwargs:
+    :return:
+    """
+    for layer_name, geometry in geometries.items():
+        add_shapely_geometry(qgis_instance_handle, geometry, name=layer_name, **kwargs)
+
+
 class QliveRPCMethodEnum(Enum):
     # add_layers = add_layers.__name__
     remove_layers = remove_layers.__name__
@@ -521,7 +403,9 @@ class QliveRPCMethodEnum(Enum):
     add_wkts = add_wkts.__name__
     add_wkbs = add_wkbs.__name__
     add_dataframe = add_dataframe.__name__
-    add_shapely = add_shapely.__name__
+    add_dataframes = add_dataframes.__name__
+    add_shapely_geometry = add_shapely_geometry.__name__
+    add_shapely_geometries = add_shapely_geometries.__name__
     add_raster = add_raster.__name__
     add_rasters = add_rasters.__name__
 

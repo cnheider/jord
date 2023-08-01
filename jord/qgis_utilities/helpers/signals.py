@@ -11,6 +11,7 @@ __all__ = ["disconnect_signal", "connect_signal", "reconnect_signal"]
 
 from logging import warning
 
+# noinspection PyUnresolvedReferences
 from qgis.PyQt import QtCore
 
 IS_DEBUGGING = False

@@ -3,12 +3,15 @@ from itertools import cycle
 from typing import Iterable, Sized, Callable, Generator
 
 from PyQt5.Qt import QColor
+
+# noinspection PyUnresolvedReferences
 from qgis.core import (
     QgsVectorLayer,
     QgsSymbol,
     QgsRendererCategory,
     QgsCategorizedSymbolRenderer,
 )
+
 from warg import TripleNumber, QuadNumber, n_uint_mix_generator_builder
 
 __all__ = ["categorise_layer"]

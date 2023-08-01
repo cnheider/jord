@@ -9,6 +9,7 @@ __doc__ = r"""
 
 from typing import Tuple
 
+# noinspection PyUnresolvedReferences
 from qgis.PyQt import QtGui, QtWidgets
 
 __all__ = ["dialog_progress_bar"]

@@ -9,3 +9,9 @@ __all__ = ["InterfacedQliveClient"]
 class InterfacedQliveClient(QliveClient):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+    def raster(self):
+        ...
+
+    def geometry(self):
+        ...

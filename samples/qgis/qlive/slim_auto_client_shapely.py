@@ -20,6 +20,6 @@ server_address = "tcp://10.0.2.81:5555"
 
 with AutoQliveClient(server_address) as qlive:
     if True:
-        qlive.add_wkts(
+        qlive.add_shapely_geometry(
             {"gm1": example_wkt_gm, "poly1": example_wkt_polygon},
         )

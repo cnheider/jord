@@ -2,9 +2,7 @@ from enum import Enum
 from typing import Any
 
 import numpy
-from qgis.core import (
-    Qgis,
-)
+from qgis.core import Qgis
 
 
 class QgisDataTypeEnum(Enum):
