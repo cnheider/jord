@@ -23,3 +23,4 @@ from .geometry_types import *
 from .iteration import *
 from .projection import *
 from .transformation import *
+from .rings import *

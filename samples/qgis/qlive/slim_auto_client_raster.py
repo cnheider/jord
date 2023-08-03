@@ -22,8 +22,8 @@ server_address = "tcp://localhost:5555"
 with AutoQliveClient(server_address) as qlive:
     from PIL import Image
 
-    image = Image.open("exclude/mp.png")  # "exclude/duck_bat.jpg")
-    if True:
+    image = Image.open("exclude/square.png")  # "exclude/duck_bat.jpg")
+    if False:
         gray_scale = image.convert("L")
         raster_ = numpy.asarray(gray_scale)
     else:
@@ -42,9 +42,10 @@ with AutoQliveClient(server_address) as qlive:
             qlive.add_raster(
                 raster_,
                 "mp_raster",
+                None,  # (1000,1000),
                 None,
-                None,
-                1,  # 0.01,
-                "EPSG:4326",
+                1,  # 0.1, #1,  # 0.01,
+                "EPSG:3857",
+                # "EPSG:4326",
             )
         )

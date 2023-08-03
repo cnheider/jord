@@ -1,6 +1,6 @@
 import json
 import time
-from typing import Any, Optional, Mapping
+from typing import Any, Optional, Mapping, Iterable
 
 from warg import passes_kws_to
 
@@ -16,10 +16,14 @@ DEFAULT_LAYER_CRS = "EPSG:4326"
 VERBOSE = False
 
 
-__all__ = ["add_qgis_geometry", "add_qgis_geometries"]
+__all__ = [
+    "add_qgis_single_feature_layer",
+    "add_qgis_single_geometry_layers",
+    "add_qgis_multi_feature_layer",
+]
 
 
-def add_qgis_geometry(
+def add_qgis_single_feature_layer(
     qgis_instance_handle: Any,
     geom,  #: QgsGeometry,
     name: Optional[str] = None,
@@ -50,7 +54,7 @@ def add_qgis_geometry(
     # uri = geom.wktTypeStr()
 
     geom_type = json.loads(geom.asJson())["type"]
-    uri = geom_type
+    uri = geom_type  # TODO: URI MIGHT BE NONE?
 
     if name is None:
         name = DEFAULT_LAYER_NAME
@@ -67,7 +71,7 @@ def add_qgis_geometry(
 
         for g in geom.asGeometryCollection():  # TODO: Look into recursion?
             uri = json.loads(g.asJson())["type"]
-            sub_type = uri
+            sub_type = uri  # TODO: URI MIGHT BE NONE?
 
             if crs:
                 uri += f"?crs={crs}"
@@ -98,7 +102,7 @@ def add_qgis_geometry(
 
         g = geom
         uri = json.loads(g.asJson())["type"]
-        sub_type = uri
+        sub_type = uri  # TODO: URI MIGHT BE NONE?
 
         if crs:
             uri += f"?crs={crs}"
@@ -147,9 +151,76 @@ def add_qgis_geometry(
         qgis_instance_handle.temporary_group.insertLayer(0, layer)
 
 
-@passes_kws_to(add_qgis_geometry)
-def add_qgis_geometries(
-    qgis_instance_handle: Any, geoms, **kwargs  # Mapping[str, QgsGeometry]
+@passes_kws_to(add_qgis_single_feature_layer)
+def add_qgis_single_geometry_layers(
+    qgis_instance_handle: Any, geoms: Mapping, **kwargs  # [str,QgsGeometry]
 ) -> None:
     for name, geom in geoms.items():
-        add_qgis_geometry(qgis_instance_handle, geom, name, **kwargs)
+        add_qgis_single_feature_layer(qgis_instance_handle, geom, name, **kwargs)
+
+
+def add_qgis_multi_feature_layer(
+    qgis_instance_handle: Any,
+    geoms: Iterable,  # [QgsGeometry]
+    name: Optional[str] = None,
+    crs: Optional[str] = None,
+    fields: Mapping[str, Any] = None,
+    index: bool = False,
+) -> None:
+    # noinspection PyUnresolvedReferences
+    from qgis.core import QgsVectorLayer, QgsFeature
+
+    # uri = geom.type()
+    # uri = geom.wkbType()
+    # uri = geom.wktTypeStr()
+
+    if name is None:
+        name = DEFAULT_LAYER_NAME
+
+    if crs is None:
+        crs = DEFAULT_LAYER_CRS
+
+    layer_name = f"{name}"
+    if APPEND_TIMESTAMP:
+        layer_name += f"_{time.time()}"
+
+    geom_type = None
+    uri = None
+    features = []
+
+    for geom in geoms:
+        geom_type_ = json.loads(geom.asJson())["type"]
+        if geom_type is None:
+            geom_type = geom_type_
+            uri = geom_type  # TODO: URI MIGHT BE NONE?
+
+        assert geom_type_ == geom_type
+
+        if geom_type == GeoJsonGeometryTypesEnum.geometry_collection.value.__name__:
+            for g in geom.asGeometryCollection():  # TODO: Look into recursion?
+                add_qgis_multi_feature_layer(
+                    qgis_instance_handle, g, f'{name}_{json.loads(g.asJson())["type"]}'
+                )
+            return
+        else:
+            feat = QgsFeature()
+            feat.setGeometry(geom)
+            features.append(feat)
+
+    if crs:
+        uri += f"?crs={crs}"
+
+    if fields:
+        for k, v in fields.items():
+            uri += f"&field={k}:{v}"
+
+    uri += f'&index={"yes" if index else "no"}'
+
+    layer = QgsVectorLayer(uri, layer_name, "memory")
+    layer.dataProvider().addFeatures(features)
+
+    if SKIP_MEMORY_LAYER_CHECK_AT_CLOSE:
+        layer.setCustomProperty("skipMemoryLayersCheck", 1)
+
+    qgis_instance_handle.qgis_project.addMapLayer(layer, False)
+    qgis_instance_handle.temporary_group.insertLayer(0, layer)

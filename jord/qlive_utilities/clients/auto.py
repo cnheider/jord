@@ -58,8 +58,8 @@ class AutoQliveClient(QliveClient):
                 rpc_method = lambda *args: self.send(build_package(method, *args))
             else:
 
-                def wrapped(method_, *args_) -> Callable:
-                    return self.send(build_package(method_, *args_))
+                def wrapped(method_, *args_, **kwargs) -> Callable:
+                    return self.send(build_package(method_, *args_, **kwargs))
 
                 rpc_method = partial(wrapped, method)
 
