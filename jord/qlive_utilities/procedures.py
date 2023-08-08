@@ -1,7 +1,7 @@
 import time
 import uuid
 from enum import Enum
-from typing import Mapping, Any, Tuple
+from typing import Mapping, Any, Tuple, Iterable
 
 import numpy
 import shapely.geometry.base
@@ -12,7 +12,10 @@ from warg import ensure_existence
 from warg import passes_kws_to, Number
 
 from jord import PROJECT_APP_PATH
-from jord.qlive_utilities.qgis_layer_creation import add_qgis_geometry
+from jord.qlive_utilities.qgis_layer_creation import (
+    add_qgis_single_feature_layer,
+    add_qgis_multi_feature_layer,
+)
 
 APPEND_TIMESTAMP = True
 SKIP_MEMORY_LAYER_CHECK_AT_CLOSE = True
@@ -28,18 +31,275 @@ __all__ = [
     "add_rasters",
     "add_wkt",
     "add_wkts",
+    "add_wkt_layer",
     "add_wkb",
     "add_wkbs",
+    "add_wkb_layer",
     "add_dataframe",
     "add_dataframes",
+    "add_dataframe_layer",
     "add_geojson",
+    "add_geojsons",
+    "add_geojson_layer",
     "add_shapely_geometry",
     "add_shapely_geometries",
+    "add_shapely_layer",
     "clear_all",
     "remove_layers",
+    "remove_layer",
     "QliveRPCMethodEnum",
     "QliveRPCMethodMap",
 ]
+
+
+@passes_kws_to(add_qgis_single_feature_layer)
+def add_wkb(qgis_instance_handle: Any, wkb: str, **kwargs) -> None:
+    """
+
+    :param qgis_instance_handle:
+    :param wkb:
+    :param kwargs:
+    :return:
+    """
+    # noinspection PyUnresolvedReferences
+    from qgis.core import QgsGeometry
+
+    add_qgis_single_feature_layer(
+        qgis_instance_handle, QgsGeometry.fromWkb(wkb), **kwargs
+    )
+
+
+@passes_kws_to(add_wkb)
+def add_wkbs(qgis_instance_handle: Any, wkbs: Mapping[str, str], **kwargs) -> None:
+    """
+
+    :param qgis_instance_handle:
+    :param wkbs:
+    :param kwargs:
+    :return:
+    """
+    for layer_name, wkb in wkbs.items():
+        add_wkb(qgis_instance_handle, wkb, name=layer_name, **kwargs)
+
+
+@passes_kws_to(add_qgis_multi_feature_layer)
+def add_wkb_layer(qgis_instance_handle: Any, wkbs: Iterable[str], **kwargs) -> None:
+    # noinspection PyUnresolvedReferences
+    from qgis.core import QgsGeometry
+
+    add_qgis_multi_feature_layer(
+        qgis_instance_handle, [QgsGeometry.fromWkb(wkb) for wkb in wkbs], **kwargs
+    )
+
+
+@passes_kws_to(add_qgis_single_feature_layer)
+def add_wkt(qgis_instance_handle: Any, wkt: str, **kwargs) -> None:
+    """
+
+    :param qgis_instance_handle:
+    :param wkt:
+    :param kwargs:
+    :return:
+    """
+    # noinspection PyUnresolvedReferences
+    from qgis.core import QgsGeometry
+
+    add_qgis_single_feature_layer(
+        qgis_instance_handle, QgsGeometry.fromWkt(wkt), **kwargs
+    )
+
+
+@passes_kws_to(add_wkt)
+def add_wkts(qgis_instance_handle: Any, wkts: Mapping[str, str], **kwargs) -> None:
+    """
+
+    :param qgis_instance_handle:
+    :param wkts:
+    :param kwargs:
+    :return:
+    """
+    for layer_name, wkt in wkts.items():
+        add_wkt(qgis_instance_handle, wkt, name=layer_name, **kwargs)
+
+
+@passes_kws_to(add_qgis_multi_feature_layer)
+def add_wkt_layer(qgis_instance_handle: Any, wkts: Iterable[str], **kwargs) -> None:
+    # noinspection PyUnresolvedReferences
+    from qgis.core import QgsGeometry
+
+    add_qgis_multi_feature_layer(
+        qgis_instance_handle, [QgsGeometry.fromWkt(wkt) for wkt in wkts], **kwargs
+    )
+
+
+@passes_kws_to(add_wkt)
+def add_shapely_geometry(
+    qgis_instance_handle: Any, geom: BaseGeometry, **kwargs
+) -> None:
+    """
+    Add a shapely geometry
+
+    :param geom:
+    :param qgis_instance_handle:
+    :return:
+    """
+
+    add_wkt(qgis_instance_handle, geom.wkt, **kwargs)
+
+
+@passes_kws_to(add_shapely_geometry)
+def add_shapely_geometries(
+    qgis_instance_handle: Any, geometries: Mapping, **kwargs
+) -> None:
+    """
+
+    :param geometries:
+    :param qgis_instance_handle:
+    :param kwargs:
+    :return:
+    """
+    for layer_name, geometry in geometries.items():
+        add_shapely_geometry(qgis_instance_handle, geometry, name=layer_name, **kwargs)
+
+
+@passes_kws_to(add_wkt_layer)
+def add_shapely_layer(
+    qgis_instance_handle: Any,
+    geoms: Iterable[shapely.geometry.base.BaseGeometry],
+    **kwargs,
+) -> None:
+    # assert geoms[0] == #TODO: SAME TYPE
+    add_wkt_layer(qgis_instance_handle, [geom.wkt for geom in geoms], **kwargs)
+
+
+@passes_kws_to(add_wkb)  # OR add_wkt
+def add_dataframe(qgis_instance_handle: Any, dataframe: DataFrame, **kwargs) -> None:
+    """
+
+    :param qgis_instance_handle:
+    :param dataframe:
+    :param kwargs:
+    :return:
+    """
+    from geopandas import GeoDataFrame
+    from jord.geopandas_utilities import split_on_geom_type
+
+    if isinstance(dataframe, GeoDataFrame):
+        columns_to_include = ("layer",)
+        geom_dict = split_on_geom_type(dataframe)
+        for df in geom_dict.values():
+            if False:
+                for w in df.geometry.to_wkt():
+                    add_wkt(qgis_instance_handle, w, **kwargs)
+            else:
+                for w in df.geometry.to_wkb():
+                    add_wkb(qgis_instance_handle, w, **kwargs)
+
+    elif isinstance(dataframe, DataFrame) and False:
+        geometry_column = "geometry"
+        if isinstance(
+            dataframe[geometry_column][0], shapely.geometry.base.BaseGeometry
+        ):
+            a = dataframe[geometry_column][0]
+            # if a.geom_type == "MultiPolygon":
+
+            wkts = [d.wkt for d in dataframe[geometry_column]]
+        elif isinstance(dataframe[geometry_column][0], str):
+            wkts = dataframe[geometry_column]
+        else:
+            raise NotImplemented
+
+        for row in wkts:
+            add_wkt(qgis_instance_handle, row, **kwargs)
+    else:
+        if VERBOSE:
+            print("SKIP!")
+
+
+@passes_kws_to(add_qgis_single_feature_layer)
+def add_dataframes(
+    qgis_instance_handle: Any, dataframes: Mapping[str, DataFrame], **kwargs
+) -> None:
+    ...
+
+
+def add_dataframe_layer(
+    qgis_instance_handle: Any, geoms: Iterable[DataFrame], **kwargs
+) -> None:
+    ...
+
+
+@passes_kws_to(add_shapely_geometry)
+def add_geojson(qgis_instance_handle: Any, geojson_: str, **kwargs) -> None:
+    """
+
+    :param geojson_:
+    :param qgis_instance_handle:
+    :param kwargs:
+    :return:
+    """
+    # meta_data = ''
+    add_shapely_geometry(qgis_instance_handle, shapely.from_geojson(geojson_), **kwargs)
+
+
+@passes_kws_to(add_shapely_geometry)
+def add_geojsons(
+    qgis_instance_handle: Any, geojsons: Mapping[str, str], **kwargs
+) -> None:
+    """
+
+    :param qgis_instance_handle:
+    :param geojsons:
+    :param kwargs:
+    :return:
+    """
+    for layer_name, geojson_ in geojsons.items():
+        add_shapely_geometry(
+            qgis_instance_handle,
+            shapely.from_geojson(geojson_),
+            name=layer_name,
+            **kwargs,
+        )
+
+
+@passes_kws_to(add_shapely_layer)
+def add_geojson_layer(
+    qgis_instance_handle: Any, geojsons: Iterable[str], **kwargs
+) -> None:
+    add_shapely_layer(
+        qgis_instance_handle,
+        [shapely.from_geojson(geojson_) for geojson_ in geojsons],
+        **kwargs,
+    )
+
+
+def remove_layers(qgis_instance_handle: Any, *args) -> None:
+    """
+    clear all the added layers
+
+    :param qgis_instance_handle:
+    :param args:
+    :return: None
+    :rtype: None
+    """
+    qgis_instance_handle.on_clear_temporary()
+
+
+def remove_layer(qgis_instance_handle: Any, name: str) -> None:
+    ...
+    # qgis_instance_handle.on_clear_temporary()
+
+
+def clear_all(qgis_instance_handle: Any, *args) -> None:  # TODO: REMOVE THIS!
+    """
+    clear all the added layers
+
+    :param qgis_instance_handle:
+    :return:
+    """
+    remove_layers(qgis_instance_handle)
+    if VERBOSE:
+        print("CLEAR ALL!")
 
 
 def add_raster(
@@ -57,6 +317,7 @@ def add_raster(
     """
     add a raster
 
+    :param no_data_value:
     :param qgis_instance_handle:
     :param raster:
     :param name:
@@ -93,6 +354,8 @@ def add_raster(
 
     data_type = get_qgis_type(raster.dtype).value
 
+    # QgsWkbTypes.displayString(gPolygon.wkbType())
+
     extent = QgsRectangle()
 
     if extent_tuple:
@@ -101,17 +364,17 @@ def add_raster(
         extent.setXMaximum(extent_tuple[2])
         extent.setYMaximum(extent_tuple[3])
     else:
+        raster_half_size = (PIXEL_SIZE * (x_size / 2.0), PIXEL_SIZE * (y_size / 2.0))
+
+        raster_half_size = raster_half_size[1], raster_half_size[0]
+
         if centroid is None:
-            centroid = (0, 0)  # (x_size, y_size)
-
-        raster_half_size = (PIXEL_SIZE * x_size / 2, PIXEL_SIZE * y_size / 2)
-
-        if False:
-            raster_half_size = raster_half_size[1], raster_half_size[0]
+            centroid = (0, 0)  # raster_half_size
 
         extent.setXMinimum(centroid[0] - raster_half_size[0])
-        extent.setYMinimum(centroid[1] - raster_half_size[1])
         extent.setXMaximum(centroid[0] + raster_half_size[0])
+
+        extent.setYMinimum(centroid[1] - raster_half_size[1])
         extent.setYMaximum(centroid[1] + raster_half_size[1])
 
     if APPEND_TIMESTAMP:
@@ -120,20 +383,30 @@ def add_raster(
     temp_file = (
         ensure_existence(PROJECT_APP_PATH.user_data / "rasters") / f"{uuid.uuid4()}.tif"
     )
-    writer = QgsRasterFileWriter(temp_file)
-    provider = writer.createMultiBandRaster(
-        dataType=data_type.value,
-        width=x_size,
-        height=y_size,
-        extent=extent,
-        crs=QgsCoordinateReferenceSystem(crs_str),
-        nBands=num_bands,
-    )
+    writer = QgsRasterFileWriter(str(temp_file))
 
-    if VERBOSE:
-        print("drawing")
+    if num_bands > 1:
+        provider = writer.createMultiBandRaster(
+            dataType=data_type,
+            width=x_size,
+            height=y_size,
+            extent=extent,
+            crs=QgsCoordinateReferenceSystem(crs_str),
+            nBands=num_bands,
+        )
+    else:
+        provider = writer.createOneBandRaster(
+            dataType=data_type,
+            width=x_size,
+            height=y_size,
+            extent=extent,
+            crs=QgsCoordinateReferenceSystem(crs_str),
+        )
 
-    w_pixels, h_pixels = x_size, y_size
+    w_pixels, h_pixels = (
+        x_size,
+        y_size,
+    )  # TODO: FIGURE OUT HOW TO HANDLE NON SQUARE RASTERS! SCALE DIMS BY SOME AMOUNT.
 
     with RasterDataProviderEditSession(provider):
         progress = range(0, num_bands)
@@ -151,10 +424,8 @@ def add_raster(
                 for hp in range(0, h_pixels):
                     value = raster[wp][hp][ith_band]
                     if value == numpy.nan:
-                        block.setIsNoData(wp, hp)
-                        continue
-                    if False:
-                        value = int(value) * 255
+                        if block.setIsNoData(wp, hp):
+                            continue
                     block.setValue(wp, hp, value)
 
             if VERBOSE:
@@ -164,7 +435,7 @@ def add_raster(
 
             del block
 
-    layer = QgsRasterLayer(temp_file, name, "gdal")
+    layer = QgsRasterLayer(str(temp_file), name, "gdal")
 
     if num_bands == 1:
         # this is needed for the min and max value to refresh in the layer panel
@@ -222,190 +493,33 @@ def add_rasters(qgis_instance_handle, rasters: Mapping, **kwargs) -> None:
         add_raster(qgis_instance_handle, raster, name=layer_name, **kwargs)
 
 
-@passes_kws_to(add_qgis_geometry)
-def add_wkb(qgis_instance_handle: Any, wkb: str, **kwargs) -> None:
-    """
-
-    :param qgis_instance_handle:
-    :param wkb:
-    :param kwargs:
-    :return:
-    """
-    # noinspection PyUnresolvedReferences
-    from qgis.core import QgsGeometry
-
-    add_qgis_geometry(qgis_instance_handle, QgsGeometry.fromWkb(wkb), **kwargs)
-
-
-@passes_kws_to(add_qgis_geometry)
-def add_wkt(qgis_instance_handle: Any, wkt: str, **kwargs) -> None:
-    """
-
-    :param qgis_instance_handle:
-    :param wkt:
-    :param kwargs:
-    :return:
-    """
-    # noinspection PyUnresolvedReferences
-    from qgis.core import QgsGeometry
-
-    add_qgis_geometry(qgis_instance_handle, QgsGeometry.fromWkt(wkt), **kwargs)
-
-
-@passes_kws_to(add_wkb)
-def add_wkbs(qgis_instance_handle: Any, wkbs: Mapping[str, str], **kwargs) -> None:
-    """
-
-    :param qgis_instance_handle:
-    :param wkbs:
-    :param kwargs:
-    :return:
-    """
-    for layer_name, wkb in wkbs.items():
-        add_wkb(qgis_instance_handle, wkb, name=layer_name, **kwargs)
-
-
-@passes_kws_to(add_wkt)
-def add_wkts(qgis_instance_handle: Any, wkts: Mapping[str, str], **kwargs) -> None:
-    """
-
-    :param qgis_instance_handle:
-    :param wkts:
-    :param kwargs:
-    :return:
-    """
-    for layer_name, wkt in wkts.items():
-        add_wkt(qgis_instance_handle, wkt, name=layer_name, **kwargs)
-
-
-@passes_kws_to(add_qgis_geometry)
-def add_dataframes(
-    qgis_instance_handle: Any, dataframes: Mapping[str, DataFrame], **kwargs
-) -> None:
-    ...
-
-
-@passes_kws_to(add_qgis_geometry)
-def add_dataframe(qgis_instance_handle: Any, dataframe: DataFrame, **kwargs) -> None:
-    """
-
-    :param qgis_instance_handle:
-    :param dataframe:
-    :param kwargs:
-    :return:
-    """
-    from geopandas import GeoDataFrame
-    from jord.geopandas_utilities import split_on_geom_type
-
-    if isinstance(dataframe, GeoDataFrame):
-        columns_to_include = ("layer",)
-        geom_dict = split_on_geom_type(dataframe)
-        for df in geom_dict.values():
-            if False:
-                for w in df.geometry.to_wkt():
-                    add_wkt(qgis_instance_handle, w)
-            else:
-                for w in df.geometry.to_wkb():
-                    add_wkb(qgis_instance_handle, w)
-
-    elif isinstance(dataframe, DataFrame) and False:
-        geometry_column = "geometry"
-        if isinstance(
-            dataframe[geometry_column][0], shapely.geometry.base.BaseGeometry
-        ):
-            a = dataframe[geometry_column][0]
-            # if a.geom_type == "MultiPolygon":
-
-            wkts = [d.wkt for d in dataframe[geometry_column]]
-        elif isinstance(dataframe[geometry_column][0], str):
-            wkts = dataframe[geometry_column]
-        else:
-            raise NotImplemented
-
-        for row in wkts:
-            add_wkt(qgis_instance_handle, row)
-    else:
-        if VERBOSE:
-            print("SKIP!")
-
-
-@passes_kws_to(add_qgis_geometry)
-def add_geojson(qgis_instance_handle: Any, geojson: str, **kwargs) -> None:
-    """
-
-    :param qgis_instance_handle:
-    :param dataframe:
-    :param kwargs:
-    :return:
-    """
-    geom = shapely.from_geojson(geojson)
-    add_shapely_geometry(geom)
-
-
-def remove_layers(qgis_instance_handle: Any, *args) -> None:
-    """
-    clear all the added layers
-
-    :param qgis_instance_handle:
-    :param args:
-    :return:
-    """
-    qgis_instance_handle.on_clear_temporary()
-
-
-def clear_all(qgis_instance_handle: Any, *args) -> None:  # TODO: REMOVE THIS!
-    """
-    clear all the added layers
-
-    :param qgis_instance_handle:
-    :return:
-    """
-    remove_layers(qgis_instance_handle)
-    if VERBOSE:
-        print("CLEAR ALL!")
-
-
-def add_shapely_geometry(
-    qgis_instance_handle: Any, geom: BaseGeometry, **kwargs
-) -> None:
-    """
-    Add a shapely geometry
-
-    :param qgis_instance_handle:
-    :param args:
-    :return:
-    """
-
-    add_wkt(qgis_instance_handle, geom.wkt)
-
-
-@passes_kws_to(add_shapely_geometry)
-def add_shapely_geometries(
-    qgis_instance_handle: Any, geometries: Mapping, **kwargs
-) -> None:
-    """
-
-    :param qgis_instance_handle:
-    :param wkbs:
-    :param kwargs:
-    :return:
-    """
-    for layer_name, geometry in geometries.items():
-        add_shapely_geometry(qgis_instance_handle, geometry, name=layer_name, **kwargs)
-
-
 class QliveRPCMethodEnum(Enum):
     # add_layers = add_layers.__name__
+
     remove_layers = remove_layers.__name__
     clear_all = clear_all.__name__
+    remove_layer = remove_layer.__name__
+
     add_wkt = add_wkt.__name__
-    add_wkb = add_wkb.__name__
     add_wkts = add_wkts.__name__
+    add_wkt_layer = add_wkt_layer.__name__
+
+    add_wkb = add_wkb.__name__
     add_wkbs = add_wkbs.__name__
+    add_wkb_layer = add_wkb_layer.__name__
+
     add_dataframe = add_dataframe.__name__
     add_dataframes = add_dataframes.__name__
+    add_dataframe_layer = add_dataframe_layer.__name__
+
     add_shapely_geometry = add_shapely_geometry.__name__
     add_shapely_geometries = add_shapely_geometries.__name__
+    add_shapely_layer = add_shapely_layer.__name__
+
+    add_geojson = add_geojson.__name__
+    add_geojsons = add_geojsons.__name__
+    add_geojson_layer = add_geojson_layer.__name__
+
     add_raster = add_raster.__name__
     add_rasters = add_rasters.__name__
 

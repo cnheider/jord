@@ -17,9 +17,9 @@ from .clamp import *
 from .lines import *
 from .morphology import *
 from .points import *
-from .sanitise_poly import *
+from .polygons import *
 from .serialisation import *
 from .geometry_types import *
-from .iteration import *
 from .projection import *
 from .transformation import *
+from .rings import *

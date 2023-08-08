@@ -20,20 +20,39 @@ __all__ = [
 
 import collections
 import logging
-from typing import Union, List, Sequence, Iterable
+from enum import Enum
+from typing import List, Iterable, Optional
+from typing import Tuple, Sequence, Union
 
-import shapely.ops
-from shapely.geometry import LineString, MultiLineString, Point, MultiPoint, box
+import numpy
+from shapely.geometry import (
+    LineString,
+    MultiLineString,
+    MultiPoint,
+    Point,
+    Polygon,
+    MultiPolygon,
+    GeometryCollection,
+)
+from shapely.ops import linemerge as shapely_linemerge
+from shapely.geometry import box
 from shapely.geometry.base import BaseGeometry
+from sorcery import assigned_names
+from warg import Number, pairs
 
 from jord.shapely_utilities.points import (
     unique_line_points,
     nearest_neighbor_within,
     azimuth,
+    shift_point,
+    closest_object,
 )
+from jord.shapely_utilities.polygons import explode_polygons
 
 
-def to_single_line(s: Union[LineString, MultiLineString]) -> LineString:
+def to_single_line(
+    s: Union[LineString, MultiLineString, Iterable[LineString]]
+) -> LineString:
     """
     assume that lines are ordered, NOTE closes of gaps!
 
@@ -53,6 +72,8 @@ def to_single_line(s: Union[LineString, MultiLineString]) -> LineString:
 
     elif isinstance(s, LineString):
         return s
+    elif isinstance(s, Iterable):
+        return to_single_line(MultiLineString(s))
     else:
         raise NotImplementedError
 
@@ -386,7 +407,9 @@ def prune_short_lines(
 
 
 def linemerge(
-    line_s: Union[LineString, MultiLineString]
+    line_s: Union[
+        LineString, MultiLineString, Sequence[LineString], Sequence[MultiLineString]
+    ]
 ) -> Union[LineString, MultiLineString]:
     """
     Merge a list of LineStrings and/or MultiLineStrings.
@@ -398,6 +421,9 @@ def linemerge(
     :rtype:LineString|MultiLineString
     """
     lines = []
+    if isinstance(line_s, Sequence):
+        return shapely_linemerge([linemerge(l) for l in line_s])
+
     for line in line_s.geoms:
         if isinstance(line, MultiLineString):
             # line is a multilinestring, so append its components
@@ -406,7 +432,7 @@ def linemerge(
             # line is a line, so simply append it
             lines.append(line)
 
-    return shapely.ops.linemerge(lines)
+    return shapely_linemerge(lines)
 
 
 def one_linestring_per_intersection(
@@ -423,7 +449,7 @@ def one_linestring_per_intersection(
     :param lines: A list of LineStrings or a MultiLineString
     :return: a list of LineStrings
     """
-    lines_merged = shapely.ops.linemerge(lines)
+    lines_merged = linemerge(lines)
 
     # intersecting multiline with its bounding box somehow triggers a first
     bounding_box = box(*lines_merged.bounds)
@@ -432,7 +458,7 @@ def one_linestring_per_intersection(
     # if this fails, write function to perform this on a bbox-grid and then
     # merge the result
     lines_merged = lines_merged.intersection(bounding_box)
-    lines_merged = shapely.ops.linemerge(lines_merged)
+    lines_merged = linemerge(lines_merged)
     return lines_merged
 
 
@@ -480,6 +506,509 @@ def linestring_azimuth(linestring: LineString, verbose: bool = False) -> float:
     return azimuth(Point(coords[0]), Point(coords[-1]))
 
 
+class ExtensionDirectionEnum(Enum):
+    """ """
+
+    start, end, both = assigned_names()
+
+
+def extend_line(
+    line: LineString,
+    offset: float,
+    side=ExtensionDirectionEnum.both,
+    simplify: bool = True,
+) -> LineString:
+    """
+    extend line in the same orientation
+
+    :param line:
+    :param offset:
+    :param side:
+    :param simplify:
+    :return:
+    """
+    side = ExtensionDirectionEnum(side)
+
+    if side == ExtensionDirectionEnum.both:
+        sides = [ExtensionDirectionEnum.start, ExtensionDirectionEnum.end]
+    else:
+        sides = [side]
+
+    for side in sides:
+        coords = line.coords
+
+        if side == ExtensionDirectionEnum.start:
+            p_new = shift_point(coords[0], coords[1], -1.0 * offset)
+            line = LineString([p_new] + coords[:])
+
+        elif side == ExtensionDirectionEnum.end:
+            p_new = shift_point(coords[-1], coords[-2], -1.0 * offset)
+            line = LineString(coords[:] + [p_new])
+
+    if simplify:
+        line = LineString(line.boundary.geoms)
+
+    return line
+
+
+def extend_lines(
+    lines: Union[LineString, MultiLineString, Iterable[LineString]], distance: Number
+) -> List[LineString]:
+    """
+
+    :param lines:
+    :param distance:
+    :return:
+    """
+
+    if isinstance(lines, LineString):
+        lines = [lines]
+
+    elif isinstance(lines, MultiLineString):
+        lines = lines.geoms
+
+    out_lines = []
+    for l in lines:
+        out_lines.append(extend_line(l, distance))
+
+    return out_lines
+
+
+def snap_lines(
+    lines: Sequence[LineString],
+    max_dist: float,
+    tolerance: float = 1e-3,
+    return_index: bool = False,
+) -> Union[Sequence[LineString], Tuple[Sequence[LineString], Sequence[int]]]:
+    """
+    Snap lines together if the endpoint of one line1 is at most max_dist apart from the line2.
+    Both lines are snapped by extending line1 towards line2
+    the max distance is measured in the direction of the line1
+
+    :param lines: a list of LineStrings or a MultiLineString
+    :param max_dist: maximum distance two endpoints may be joined together
+    :param tolerance:
+    :param return_index:
+    :return:
+    """
+    # extend all lines with max_dist to snap lines at a sharp angle
+    lines_ext = [extend_line(line, max_dist) for line in lines]
+
+    import rtree
+
+    # build spatial index of line bounding boxes
+    tree_idx = rtree.index.Index()
+    lines_bbox = [l.bounds for l in lines_ext]
+    for i, bbox in enumerate(lines_bbox):
+        tree_idx.insert(i, bbox)
+
+    lines_snap = []
+    idx_snapped = []
+    for i1, line in enumerate(lines):
+        if isinstance(line, LineString):
+            for side in ["start", "end"]:
+                coords = line.coords[:]
+                # make line extensions
+                if side == "start":
+                    ext = LineString(
+                        [shift_point(coords[0], coords[1], -1.0 * max_dist), coords[0]]
+                    )
+                    pnt_from = Point(coords[0])
+                elif side == "end":
+                    ext = LineString(
+                        [
+                            coords[-1],
+                            shift_point(coords[-1], coords[-2], -1.0 * max_dist),
+                        ]
+                    )
+                    pnt_from = Point(coords[-1])
+
+                # point instead of line if max_dist is zero (only clipping)
+                if max_dist == 0:
+                    ext = pnt_from
+
+                # find close-by lines based on bounds with spatial index
+                if tolerance > 0:
+                    hits = list(tree_idx.intersection(ext.buffer(tolerance).bounds))
+                else:
+                    hits = list(tree_idx.intersection(ext.bounds))
+                lines_hit = MultiLineString([lines_ext[i] for i in hits if i != i1])
+                # find intersection points. function yields list of points
+                int_points = intersection_points([ext], lines_hit, tolerance=tolerance)
+                if len(int_points) == 0:
+                    continue
+
+                # if intersection yields something else then a Point, break down to nearest point
+                if len(int_points) > 1:
+                    # if more intersections, find closest
+                    pnt_to = closest_object(int_points, pnt_from)[0]
+                else:
+                    pnt_to = int_points[0]
+
+                # at this point pnt_to is the closest intersecting point
+                if pnt_from != pnt_to:  # check if lines are not already touching
+                    # snap line towards pnt_to
+                    if side == "start":
+                        coords[0] = pnt_to.coords[0]
+                    elif side == "end":
+                        coords[-1] = pnt_to.coords[0]
+                    line = LineString(coords)
+                    if i1 not in idx_snapped:
+                        # bookkeeping: list with changes features
+                        idx_snapped.append(i1)
+
+            lines_snap.append(line)
+
+    if return_index:
+        return lines_snap, idx_snapped
+
+    return lines_snap
+
+
+def split_lines(
+    lines: Sequence[LineString],
+    points: Optional[Sequence[Point]] = None,
+    tolerance: float = 0.0,
+    return_index: bool = False,
+) -> Union[Sequence[LineString], Tuple[Sequence[LineString], Sequence[int]]]:
+    """
+    split lines at intersection, or if given, at points
+
+    :param lines:
+    :param points:
+    :param tolerance:
+    :param return_index:
+    :return:
+    """
+    if isinstance(points, Point):
+        points = [points]
+
+    # create output list
+    lines_out = []
+    index_out = []
+
+    import rtree
+
+    # build spatial index
+    if points is None:
+        # build spatial index of line bounding boxes
+        tree_idx = rtree.index.Index()
+        lines_bbox = [l.bounds for l in lines]
+        for i, bbox in enumerate(lines_bbox):
+            tree_idx.insert(i, bbox)
+    else:
+        # build spatial index of points
+        tree_idx = rtree.index.Index()
+        for i, p in enumerate(points):
+            tree_idx.insert(i, p.buffer(tolerance).bounds)
+
+    # loop through lines and split lines with split point
+    for idx, line in enumerate(lines):
+        if points is None:
+            # find close-by lines based on bounds with spatial index
+            hits = list(tree_idx.intersection(lines_bbox[idx]))
+            lines_hit = MultiLineString([lines[i] for i in hits if i != idx])
+            # find line intersections
+            # lines_other = [l for i, l in enumerate(lines) if i != idx]
+            split_points = intersection_points([line], lines_hit, tolerance=tolerance)
+        else:
+            # find close-by points based on bounds of line with spatial index
+            hits = list(tree_idx.intersection(line.bounds))
+            points_hit = [points[i] for i in hits]
+            # find points which intersects with line
+            split_points = [p for p in points_hit if line.distance(p) <= tolerance]
+            # split_points = [p for p in points if line.distance(p) <= tolerance]
+
+        # check if intersections for line
+        if len(split_points) >= 1:
+            for p in split_points:
+                line = split_line(line, p, tolerance=tolerance)
+            for l in line:
+                lines_out.append(l)
+                index_out.append(idx)
+        else:
+            lines_out.append(line)
+            index_out.append(idx)
+
+    if return_index:
+        return remove_redundant_nodes(lines_out), index_out
+
+    return remove_redundant_nodes(lines_out)
+
+
+def split_line(
+    line: LineString, point: Point, tolerance: float = 0.0
+) -> MultiLineString:
+    """
+
+    split line (Shapely LineString or MultiLineString) at  point (Shapely Point),
+    return splitted line (Shapely MultiLineString)
+
+    :param line:
+    :param point:
+    :param tolerance:
+    :return:
+    """
+    if not isinstance(line, (LineString, MultiLineString)):
+        raise TypeError("line should be shapely LineString or MultiLineString object")
+    if not isinstance(point, Point):
+        raise TypeError("point should be shapely Point object")
+
+    # function works with MultiLineStrings to be able to use the function in a split loop
+    if not isinstance(line, MultiLineString):
+        line = MultiLineString([line])
+    lines_out = []
+
+    # for intersecting line, find intersecting segment and split line
+    for l0 in line:
+        # check if point on line, but not one of its endpoints
+        if (not point.touches(l0.boundary)) and (point.distance(l0) <= tolerance):
+            coords = list(l0.coords)
+            segments = [LineString(s) for s in pairs(coords)]
+            for i, segment in enumerate(segments):
+                # find intersecting segment
+                if segment.distance(point) <= tolerance:
+                    if Point(coords[i]).touches(point):
+                        # split line at vertex if within tolerance
+                        la = LineString(coords[: i + 1])
+                        lb = LineString(coords[i:])
+                        if (la.length > tolerance) & (lb.length > tolerance):
+                            lines_out.append(la)
+                            lines_out.append(lb)
+                        else:
+                            lines_out.append(l0)
+                        break
+                    else:
+                        # split line at point on segment
+                        la = LineString(coords[: i + 1] + [(point.x, point.y)])
+                        lb = LineString([(point.x, point.y)] + coords[i + 1 :])
+                        if (la.length > tolerance) & (lb.length > tolerance):
+                            lines_out.append(la)
+                            lines_out.append(lb)
+                        else:
+                            lines_out.append(l0)
+                        break
+        else:
+            lines_out.append(l0)
+
+    return MultiLineString(lines_out)
+
+
+def clip_lines_with_polygon(
+    lines: Sequence[LineString],
+    polygon: Polygon,
+    tolerance: float = 1e-3,
+    within: bool = True,
+    return_index: bool = False,
+) -> Union[Sequence[LineString], Tuple[Sequence[LineString], Sequence[int]]]:
+    """clip lines based on polygon outline"""
+    # get boundaries of polygon
+    boundaries = explode_polygons(polygon)
+    # find intersection points of boundaries and lines and split lines based on it
+    int_points = intersection_points(lines, boundaries)
+    lines_split, index = split_lines(
+        lines, int_points, tolerance=tolerance, return_index=True
+    )
+
+    # select lines that are contained by polygon
+    polygon_buffer = polygon.buffer(
+        tolerance
+    )  # small buffer to allow for use 'within' function
+    if within:
+        lines_clip = [line for line in lines_split if line.within(polygon_buffer)]
+        index = [
+            i for i, line in zip(index, lines_split) if line.within(polygon_buffer)
+        ]
+    else:
+        lines_clip = [line for line in lines_split if not line.within(polygon_buffer)]
+        index = [
+            i for i, line in zip(index, lines_split) if not line.within(polygon_buffer)
+        ]
+    if return_index:
+        return lines_clip, index
+
+    return lines_clip
+
+
+def intersection_points(
+    lines1, lines2=None, tolerance: float = 0.0, min_spacing: float = 0
+):
+    """creates list with points of line intersections. if intersection is other type than a point,
+    it is broken down to points of its coordinates
+
+    :param tolerance:
+    :param min_spacing:
+    :param lines1: MultiLineString or list of lines
+    :param lines2: MultiLineString or list of lines, if None find intersections amongst lines1
+    :return: list with shapely points of intersection
+    """
+    import rtree
+
+    points = []
+    tree_idx_pnt = rtree.index.Index()
+    ipnt = 0
+
+    if lines2 is None:
+        # build spatial index for lines1
+        tree_idx = rtree.index.Index()
+        lines_bbox = [l.bounds for l in lines1]
+        for i, bbox in enumerate(lines_bbox):
+            tree_idx.insert(i, bbox)
+
+    # create multilinestring of close-by lines
+    for i1, l1 in enumerate(lines1):
+        if lines2 is None:
+            # find close-by lines based on bounds with spatial index
+            hits = list(tree_idx.intersection(lines_bbox[i1]))
+            lines_hit = MultiLineString([lines1[i] for i in hits if i != i1])
+        else:
+            lines_hit = MultiLineString(lines2)
+
+        if tolerance > 0:
+            l1 = extend_line(l1, tolerance)
+
+        x = l1.intersection(lines_hit)
+        if not x.is_empty:
+            if isinstance(x, Point):
+                pnts = [x]
+
+            else:
+                if isinstance(x, MultiPoint):
+                    pnts = [Point(geom) for geom in x]
+                elif isinstance(x, (MultiLineString, MultiPolygon, GeometryCollection)):
+                    pnts = [Point(coords) for geom in x for coords in geom.coords]
+                elif isinstance(x, (LineString, Polygon)):
+                    pnts = [Point(coords) for coords in x.coords]
+                else:
+                    raise NotImplementedError("intersection yields bad type")
+
+            for pnt in pnts:
+                if min_spacing > 0:
+                    if ipnt > 0:
+                        hits = list(tree_idx_pnt.intersection(pnt.bounds))
+                    else:
+                        hits = []
+
+                    if len(hits) == 0:  # no pnts within spacing
+                        ipnt += 1
+                        tree_idx_pnt.insert(ipnt, pnt.buffer(min_spacing).bounds)
+                        points.append(pnt)
+                else:
+                    points.append(pnt)
+
+    return points
+
+
+def cap_lines(
+    line: LineString, offset: float = 0.0, length: float = 1.0
+) -> Tuple[LineString, LineString]:
+    """
+    Prepare two cap lines at the beginning and end of a LineString object
+
+
+    :param line:
+    :type line: LineString
+    :param offset: determining an offset from the beginning/end point
+    :param length: length of the cap lines (in same units as LineString coordinates)
+    :return: a list with two LineString objects, containing the cap lines
+    """
+    coords = line.coords
+
+    if offset > 0:
+        # get start & end point line
+        start, end = Point(coords[0]), Point(coords[-1])
+    else:  # create short line around endpoints (necessary for perpendicular line function)
+        offset = 0.1
+        # get start & end point line
+        start = shift_point(coords[0], coords[1], 2 * abs(offset))
+        end = shift_point(coords[-1], coords[-2], 2 * abs(offset))
+
+    # extend line at both sides
+    start_extend = shift_point(coords[0], coords[1], -2 * abs(offset))
+    end_extend = shift_point(coords[-1], coords[-2], -2 * abs(offset))
+
+    # make new line segments
+    start_line = LineString([start, start_extend])
+    end_line = LineString([end, end_extend])
+
+    # get perpendicular lines at half length of start &  end lines
+    cap1 = perpendicular_line(start_line, length)
+    cap2 = perpendicular_line(end_line, length)
+
+    return (cap1, cap2)
+
+
+def perpendicular_line(l1: LineString, length: float) -> LineString:
+    """Create a new Line perpendicular to this linear entity which passes
+    through the point `p`.
+
+
+    """
+    dx = l1.coords[1][0] - l1.coords[0][0]
+    dy = l1.coords[1][1] - l1.coords[0][1]
+
+    p = Point(l1.coords[0][0] + 0.5 * dx, l1.coords[0][1] + 0.5 * dy)
+    x, y = p.coords[0][0], p.coords[0][1]
+
+    if (dy == 0) or (dx == 0):
+        a = length / l1.length
+        l2 = LineString(
+            [(x - 0.5 * a * dy, y - 0.5 * a * dx), (x + 0.5 * a * dy, y + 0.5 * a * dx)]
+        )
+
+    else:
+        s = -dx / dy
+        a = ((length * 0.5) ** 2 / (1 + s**2)) ** 0.5
+        l2 = LineString([(x + a, y + s * a), (x - a, y - s * a)])
+
+    return l2
+
+
+def add_coordinate(line: LineString, distance: float) -> LineString:
+    # Cuts a line in two at a distance from its starting point
+    if distance <= 0.0 or distance >= line.length:
+        return line
+
+    coords = list(line.coords)
+
+    for i, p in enumerate(coords):
+        pd = line.project(Point(p))
+        if pd == distance:
+            break
+        if pd > distance:
+            cp = line.interpolate(distance)
+            line = LineString(coords[:i] + [(cp.x, cp.y)] + coords[i:])
+            break
+
+    return line
+
+
+def increase_points_line(line: LineString, spacing: float) -> LineString:
+    line_length = line.length
+    cp = Point(line.interpolate(line_length - spacing))
+    line = LineString(line.coords[:-1] + [(cp.x, cp.y)] + [line.coords[-1]])
+    for i, d in enumerate(numpy.arange(line_length, spacing, -spacing)):
+        line = add_coordinate(line, d)
+    return line
+
+
+def remove_redundant_nodes(
+    lines: Sequence[LineString], tolerance: float = 1e-7
+) -> List[LineString]:
+    """
+    remove vertices with length smaller than tolerance
+    """
+    lines_out = []
+    for line in lines:
+        coords = line.coords
+        l_segments = numpy.array(
+            [Point(s[0]).distance(Point(s[1])) for s in pairs(coords)]
+        )
+        idx = numpy.where(l_segments < tolerance)[0]
+        lines_out.append(LineString([c for i, c in enumerate(coords) if i not in idx]))
+    return lines_out
+
+
 if __name__ == "__main__":
 
     def iashdh():
@@ -495,6 +1024,9 @@ if __name__ == "__main__":
         pols = [pol1, pol2]
 
         print(to_lines(pols))
+
+    def uahsduhjasd():
+        print(extend_lines(MultiLineString([[[0, 0], [0, 1]], [[0, 2], [0, 3]]]), 1))
 
     def juashud():
         print(
@@ -513,5 +1045,7 @@ if __name__ == "__main__":
             )
         )
 
-    juashud()
+    # juashud()
     # ausdh()
+    iashdh()
+    uahsduhjasd()

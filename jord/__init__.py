@@ -15,7 +15,7 @@ from warg import dist_is_editable
 
 __project__ = "Jord"
 __author__ = "Christian Heider Nielsen"
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 __doc__ = r"""
 .. module:: jord
    :platform: Unix, Windows

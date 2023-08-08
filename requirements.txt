@@ -4,3 +4,4 @@ apppath>=1.0.2
 sorcery
 pyzmq
 tqdm
+sympy

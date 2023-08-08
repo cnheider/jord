@@ -1,5 +1,5 @@
 import statistics
-from typing import Union, Tuple, List
+from typing import Union, Tuple, List, Sequence
 
 from shapely.geometry import (
     LineString,
@@ -10,9 +10,11 @@ from shapely.geometry import (
 )
 from shapely.geometry.base import BaseGeometry
 
-__all__ = ["zero_buffer", "sanitise", "deflimmer", "clean_geometry"]
+__all__ = ["zero_buffer", "sanitise", "deflimmer", "clean_geometry", "explode_polygons"]
 
+from warg import pairs
 from jord.shapely_utilities.morphology import opening, closing
+from jord.shapely_utilities.rings import ensure_ccw_ring, ensure_cw_ring
 
 
 def zero_buffer(
@@ -115,21 +117,27 @@ def mean_std_dev_area(geom: BaseGeometry) -> Tuple[float, float]:
 
 
 def prune_area(geom: BaseGeometry, eps: float = 1e-7) -> BaseGeometry:
+    raise NotImplementedError
     poly_areas = []
     if isinstance(geom, Polygon):
         poly_areas.append(geom.area)
     elif isinstance(geom, MultiPolygon):
         for po in geom.geoms:
             poly_areas.append(po.area)
+
+    return poly_areas
 
 
 def prune_rings(geom: BaseGeometry, eps: float = 1e-7) -> BaseGeometry:
+    raise NotImplementedError
     poly_areas = []
     if isinstance(geom, Polygon):
         poly_areas.append(geom.area)
     elif isinstance(geom, MultiPolygon):
         for po in geom.geoms:
             poly_areas.append(po.area)
+
+    return poly_areas
 
 
 def sanitise(geom: BaseGeometry, *args: callable) -> BaseGeometry:
@@ -146,6 +154,71 @@ def sanitise(geom: BaseGeometry, *args: callable) -> BaseGeometry:
         geom = f(geom)
 
     return geom
+
+
+def ensure_ccw_poly(polygon: Polygon) -> Polygon:
+    """
+    This function checks if the polygon is counter-clockwise if not it is reversed
+
+
+    :param polygon: The polygon to check
+    :return: Returns the polygon turned clockwise
+    """
+
+    return Polygon(
+        shell=ensure_ccw_ring(polygon.exterior),
+        holes=[ensure_ccw_ring(hole) for hole in polygon.interiors],
+    )
+
+
+def ensure_cw_poly(polygon: Polygon) -> Polygon:
+    """
+    This function checks if the polygon is clockwise if not it is reversed
+
+
+    :param polygon: The polygon to check
+    :return: Returns the polygon turned clockwise
+    """
+
+    return Polygon(
+        shell=ensure_cw_ring(polygon.exterior),
+        holes=[ensure_cw_ring(hole) for hole in polygon.interiors],
+    )
+
+
+def explode_polygons(
+    polygons: Union[Polygon, MultiPolygon, Sequence[Polygon]],
+    return_index: bool = False,
+) -> Union[Sequence[LineString], Tuple[Sequence[LineString], Sequence[int]]]:
+    """
+    returns main line features that make up the polygons
+
+    :param polygons:
+    :param return_index:
+    :return:
+    """
+    lines_out = []
+    index = []
+
+    if isinstance(polygons, Polygon):
+        polygons = [polygons]
+
+    if isinstance(polygons, MultiPolygon):
+        polygons = polygons.geoms
+
+    for i, l in enumerate(polygons):
+        for s in [LineString(s) for s in pairs(l.exterior.coords)]:
+            lines_out.append(s)
+            index.append(i)
+
+        for p in l.interiors:
+            lines_out.append(LineString(p.coords))
+            index.append(i)
+
+    if return_index:
+        return lines_out, index
+
+    return lines_out
 
 
 if __name__ == "__main__":
