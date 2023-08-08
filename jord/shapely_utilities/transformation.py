@@ -1,9 +1,10 @@
-from typing import List, Sequence, Iterable, Union
+from typing import List, Sequence, Iterable, Union, Mapping, Tuple
 from shapely.geometry.base import BaseGeometry
 from shapely.ops import transform
+import numpy
 import pyproj
 
-__all__ = ["crs_transform_shapely"]
+__all__ = ["crs_transform_shapely", "get_helmert_transformation_parameters"]
 
 
 def crs_transform_shapely(
@@ -34,3 +35,37 @@ def crs_transform_shapely(
         return [transform(projection, geometry) for geometry in geoms]
 
     return transform(projection, geoms)
+
+
+def get_helmert_transformation_parameters(
+    displacements: Iterable[Tuple[Tuple[float, float], Tuple[float, float]]],
+) -> Tuple[numpy.ndarray, numpy.ndarray]:
+    """
+    # Calculate Helmert parameters for 2D transformation
+    # https://homepage.univie.ac.at/Wolfgang.Kainz/Lehrveranstaltungen/15th_Nordic_Summer_School/The_Mathematics_of_GIS_Draft.pdf
+    # https://riptutorial.com/numpy/example/16034/find-the-least-squares-solution-to-a-linear-system-with-np-linalg-lstsq
+
+    # Displaysmentlins have to from local coordinat system to Webmercator.
+    # The transformation is a 2d helmert and not affine, so the scale factor is the same in x and y direction
+    # The angle between x and y axis have is also 90 degree.
+    # This would not be the case if target project would have been WGS84
+
+
+
+    :param displacements:
+    :return:
+    """
+    A = []
+    b = []
+    for from_, to_ in displacements:
+        fromx, fromy = from_
+        tox, toy = to_
+
+        A.append([fromx, fromy, 1, 0])
+        b.append(tox)
+        A.append([fromy, -fromx, 0, 1])
+        b.append(toy)
+
+    x, residuals, rank, s = numpy.linalg.lstsq(A, b, rcond=-1)
+
+    return x, residuals

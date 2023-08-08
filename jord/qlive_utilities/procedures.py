@@ -230,16 +230,16 @@ def add_dataframe_layer(
 
 
 @passes_kws_to(add_shapely_geometry)
-def add_geojson(qgis_instance_handle: Any, geojson: str, **kwargs) -> None:
+def add_geojson(qgis_instance_handle: Any, geojson_: str, **kwargs) -> None:
     """
 
-    :param geojson:
+    :param geojson_:
     :param qgis_instance_handle:
     :param kwargs:
     :return:
     """
     # meta_data = ''
-    add_shapely_geometry(qgis_instance_handle, shapely.from_geojson(geojson), **kwargs)
+    add_shapely_geometry(qgis_instance_handle, shapely.from_geojson(geojson_), **kwargs)
 
 
 @passes_kws_to(add_shapely_geometry)
@@ -253,10 +253,10 @@ def add_geojsons(
     :param kwargs:
     :return:
     """
-    for layer_name, geojson in geojsons.items():
+    for layer_name, geojson_ in geojsons.items():
         add_shapely_geometry(
             qgis_instance_handle,
-            shapely.from_geojson(geojson),
+            shapely.from_geojson(geojson_),
             name=layer_name,
             **kwargs,
         )
@@ -264,11 +264,11 @@ def add_geojsons(
 
 @passes_kws_to(add_shapely_layer)
 def add_geojson_layer(
-    qgis_instance_handle: Any, geoms: Iterable[str], **kwargs
+    qgis_instance_handle: Any, geojsons: Iterable[str], **kwargs
 ) -> None:
     add_shapely_layer(
         qgis_instance_handle,
-        [shapely.from_geojson(geojson) for geom in geoms],
+        [shapely.from_geojson(geojson_) for geojson_ in geojsons],
         **kwargs,
     )
 

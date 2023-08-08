@@ -4,6 +4,8 @@
 __author__ = "heider"
 __doc__ = r"""
 
+            This module must remain clean and clear of additional external dependencies outside of qgis, and base requirements of jord.
+
            Created on 5/5/22
            """
 
@@ -19,8 +21,6 @@ try:
     from .numpy_utilities import *
     from .data_provider import *
     from .geometry_types import *
-    from .shapely_utilities import *
-    from .qlive_utilities import *
     from .conversion import *
     from .categorisation import *
     from .styling import *
