@@ -16,6 +16,8 @@ __all__ = [
     "strip_line_dangles",
     "azimuth",
     "linestring_azimuth",
+    "linemerge",
+    "join_endings",
 ]
 
 import collections
@@ -25,6 +27,7 @@ from typing import List, Iterable, Optional
 from typing import Tuple, Sequence, Union
 
 import numpy
+from draugr.visualisation import progress_bar
 from shapely.geometry import (
     LineString,
     MultiLineString,
@@ -40,6 +43,7 @@ from shapely.geometry.base import BaseGeometry
 from sorcery import assigned_names
 from warg import Number, pairs
 
+from jord.shapely_utilities.projection import nearest_geometry
 from jord.shapely_utilities.points import (
     unique_line_points,
     nearest_neighbor_within,
@@ -78,7 +82,9 @@ def to_single_line(
         raise NotImplementedError
 
 
-def to_lines(geoms: Sequence[BaseGeometry]) -> List[LineString]:
+def to_lines(
+    geoms: Union[Sequence[BaseGeometry], LineString, MultiLineString]
+) -> List[LineString]:
     """
     Converts Shapely geoms in to Shapely LineString
 
@@ -89,17 +95,29 @@ def to_lines(geoms: Sequence[BaseGeometry]) -> List[LineString]:
     """
 
     lines = []
-    for g in geoms:
-        if isinstance(g, (LineString)):
-            lines.append(g)
-        elif isinstance(g, (BaseGeometry)):
-            boundary = g.boundary
-            if isinstance(boundary, MultiLineString):
-                lines.extend(to_lines(boundary.geoms))
+    if isinstance(geoms, Iterable):
+        for g in geoms:
+            if isinstance(g, (LineString)):
+                lines.append(g)
+            elif isinstance(g, MultiLineString):
+                lines.extend(g.geoms)
+            elif isinstance(g, (BaseGeometry)):
+                boundary = g.boundary
+                if boundary:
+                    if isinstance(boundary, MultiLineString):
+                        lines.extend(to_lines(boundary.geoms))
+                    elif isinstance(boundary, MultiPoint):
+                        lines.append(LineString(coordinates=boundary.geoms))
+                    else:
+                        lines.append(boundary)
             else:
-                lines.append(boundary)
-        else:
-            raise NotImplementedError(f"{g, type(g)}")
+                raise NotImplementedError(f"{g, type(g)}")
+    elif isinstance(geoms, MultiLineString):
+        lines = geoms.geoms
+    elif isinstance(geoms, LineString):
+        lines = [geoms]
+    else:
+        raise NotImplementedError(f"{geoms, type(geoms)}")
 
     return lines
 
@@ -277,8 +295,8 @@ def explode_lines(
 
 
 def find_isolated_endpoints(
-    lines: Sequence[Union[LineString, MultiLineString]],
-) -> Sequence[Point]:
+    lines: List[Union[LineString, MultiLineString]],
+) -> List[Point]:
     """
     Find endpoints of lines that don't touch another line.
 
@@ -287,19 +305,73 @@ def find_isolated_endpoints(
     """
 
     isolated_endpoints = []
-    for i, line in enumerate(lines):
+
+    it = lines
+
+    # it = progress_bar(it)
+
+    for i, line in enumerate(it):
         other_lines = lines[:i] + lines[i + 1 :]
+
         for q in [0, -1]:
             endpoint = Point(line.coords[q])
+
             if any(endpoint.touches(another_line) for another_line in other_lines):
                 continue
             else:
                 isolated_endpoints.append(endpoint)
+
     return isolated_endpoints
 
 
+def join_endings(
+    lines: Union[
+        LineString, Iterable[LineString], MultiLineString, Iterable[MultiLineString]
+    ],
+    only_inter_joins: bool = True,  # Only joining inter MultiLineString ending (NOT WITH ITSELF)!
+    max_distance: float = 0,
+) -> Sequence[Union[LineString, MultiLineString]]:
+    """
+    Snap endpoints of lines together if they are at most max_length apart.
+
+
+    :param lines: A list of LineStrings or a MultiLineString
+    :param max_distance: maximum distance two endpoints may be joined together
+    :return:
+    :rtype: Sequence[Union[LineString, MultiLineString]]
+    """
+
+    # lines_components = explode_lines(lines)
+    # lines_components = to_lines(lines)
+    lines_components = lines
+
+    unique_endpoints = unique_line_points(lines_components)
+
+    isolated_endpoints = find_isolated_endpoints(lines_components)
+
+    it = isolated_endpoints
+    # it = progress_bar(it)
+
+    for endpoint in it:
+        if max_distance > 0:
+            target = nearest_neighbor_within(unique_endpoints, endpoint, max_distance)
+        else:
+            target, *_ = nearest_geometry(unique_endpoints, endpoint)
+
+        if not target:  # do nothing if no target point to join to was found
+            continue
+
+        lines_components.append(LineString([endpoint, target]))
+
+    lines_components = [
+        s for s in lines_components if s.length > 0
+    ]  # post-processing: remove any resulting lines of length 0
+
+    return lines_components
+
+
 def snappy_endings(
-    lines: Union[LineString, MultiLineString], max_distance: float
+    lines: Union[Iterable[LineString], MultiLineString], max_distance: float
 ) -> Sequence[Union[LineString, MultiLineString]]:
     """
     Snap endpoints of lines together if they are at most max_length apart.
@@ -313,7 +385,8 @@ def snappy_endings(
 
     # initialize snapped lines with list of original lines
     # snapping points is a MultiPoint object of all vertices
-    snapped_lines = [line for line in lines]
+    snapped_lines = to_lines(lines)
+
     snapping_points = unique_line_points(snapped_lines)
 
     # isolated endpoints are going to snap to the closest vertex
@@ -421,6 +494,12 @@ def linemerge(
     :rtype:LineString|MultiLineString
     """
     lines = []
+
+    assert isinstance(line_s, (LineString, MultiLineString, Sequence))
+
+    if isinstance(line_s, LineString):
+        return line_s
+
     if isinstance(line_s, Sequence):
         return shapely_linemerge([linemerge(l) for l in line_s])
 

@@ -11,11 +11,10 @@ from importlib import resources
 from importlib.metadata import PackageNotFoundError
 from warg import package_is_editable
 from apppath import AppPath
-from warg import dist_is_editable
 
 __project__ = "Jord"
 __author__ = "Christian Heider Nielsen"
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 __doc__ = r"""
 .. module:: jord
    :platform: Unix, Windows
