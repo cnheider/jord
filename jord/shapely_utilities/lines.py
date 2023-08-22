@@ -27,7 +27,6 @@ from typing import List, Iterable, Optional
 from typing import Tuple, Sequence, Union
 
 import numpy
-from draugr.visualisation import progress_bar
 from shapely.geometry import (
     LineString,
     MultiLineString,
@@ -308,8 +307,6 @@ def find_isolated_endpoints(
 
     it = lines
 
-    # it = progress_bar(it)
-
     for i, line in enumerate(it):
         other_lines = lines[:i] + lines[i + 1 :]
 
@@ -350,7 +347,6 @@ def join_endings(
     isolated_endpoints = find_isolated_endpoints(lines_components)
 
     it = isolated_endpoints
-    # it = progress_bar(it)
 
     for endpoint in it:
         if max_distance > 0:

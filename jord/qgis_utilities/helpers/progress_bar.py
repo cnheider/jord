@@ -51,14 +51,14 @@ if __name__ == "__main__":
         dialog, bar = dialog_progress_bar(0)
         bar.setValue(0)
         bar.setMaximum(100)
-        sum = 0
+        sum_ = 0
         for i in range(x):
             for j in range(y):
                 k = i + j
-                sum += k
+                sum_ += k
             i += 1
             bar.setValue((float(i) / float(x)) * 100)
             sleep(0.1)
-        print(sum)
+        print(sum_)
 
     # calc(10000, 2000)
