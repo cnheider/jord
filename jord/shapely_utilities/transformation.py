@@ -4,7 +4,11 @@ from shapely.ops import transform
 import numpy
 import pyproj
 
-__all__ = ["crs_transform_shapely", "get_helmert_transformation_parameters"]
+__all__ = [
+    "crs_transform_shapely",
+    "get_helmert_transformation_parameters",
+    "get_affine_transform_parameters",
+]
 
 
 def crs_transform_shapely(
@@ -69,3 +73,11 @@ def get_helmert_transformation_parameters(
     x, residuals, rank, s = numpy.linalg.lstsq(A, b, rcond=-1)
 
     return x, residuals
+
+
+def get_affine_transform_parameters(
+    displacements: Iterable[Tuple[Tuple[float, float], Tuple[float, float]]]
+) -> Tuple[float, float, float, float, float, float]:
+    transformation_params, _ = get_helmert_transformation_parameters(displacements)
+    a, b, c, d = transformation_params
+    return [a, b, -b, a, c, d]

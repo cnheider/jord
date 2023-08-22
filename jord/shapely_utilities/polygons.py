@@ -1,5 +1,5 @@
 import statistics
-from typing import Union, Tuple, List, Sequence
+from typing import Union, Tuple, List, Sequence, Generator
 
 from shapely.geometry import (
     LineString,
@@ -10,7 +10,15 @@ from shapely.geometry import (
 )
 from shapely.geometry.base import BaseGeometry
 
-__all__ = ["zero_buffer", "sanitise", "deflimmer", "clean_geometry", "explode_polygons"]
+__all__ = [
+    "zero_buffer",
+    "sanitise",
+    "deflimmer",
+    "clean_geometry",
+    "explode_polygons",
+    "polygon_has_interior_rings",
+    "iter_polygons",
+]
 
 from warg import pairs
 from jord.shapely_utilities.morphology import opening, closing
@@ -27,6 +35,10 @@ def zero_buffer(
     # MultiPolygon
 ]:
     return geom.buffer(0)
+
+
+def polygon_has_interior_rings(polygon: Polygon) -> bool:
+    return len(polygon.interiors) > 0
 
 
 def deflimmer(geom: BaseGeometry, eps: float = 1e-7) -> BaseGeometry:
@@ -184,6 +196,17 @@ def ensure_cw_poly(polygon: Polygon) -> Polygon:
         shell=ensure_cw_ring(polygon.exterior),
         holes=[ensure_cw_ring(hole) for hole in polygon.interiors],
     )
+
+
+def iter_polygons(
+    _input_geometry: BaseGeometry,
+) -> Union[Generator[Polygon, None, None], Tuple[BaseGeometry]]:
+    if isinstance(_input_geometry, MultiPolygon):
+        return (polygon for polygon in _input_geometry.geoms)
+
+    # assert isinstance(_input_geometry, Polygon)
+
+    return (_input_geometry,)
 
 
 def explode_polygons(

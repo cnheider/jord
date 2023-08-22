@@ -1,6 +1,6 @@
 import json
 import time
-from typing import Any, Optional, Mapping, Iterable
+from typing import Any, Optional, Mapping, Iterable, Union
 
 from warg import passes_kws_to
 
@@ -28,7 +28,7 @@ def add_qgis_single_feature_layer(
     geom,  #: QgsGeometry,
     name: Optional[str] = None,
     crs: Optional[str] = None,
-    fields: Mapping[str, Any] = None,
+    columns: Optional[Mapping[str, Any]] = None,
     index: bool = False,
     categorise_by_attribute: Optional[str] = None,
 ) -> None:
@@ -66,6 +66,8 @@ def add_qgis_single_feature_layer(
     if APPEND_TIMESTAMP:
         layer_name += f"_{time.time()}"
 
+    fields = {k: solve_type(v) for k, v in columns}
+
     if geom_type == GeoJsonGeometryTypesEnum.geometry_collection.value.__name__:
         gm_group = qgis_instance_handle.temporary_group.addGroup(layer_name)
 
@@ -73,17 +75,29 @@ def add_qgis_single_feature_layer(
             uri = json.loads(g.asJson())["type"]
             sub_type = uri  # TODO: URI MIGHT BE NONE?
 
+            uri += "?"
+
             if crs:
-                uri += f"?crs={crs}"
+                uri += f"crs={crs}"
 
             if fields:
+                uri = str(uri).rstrip("&")
                 for k, v in fields.items():
                     uri += f"&field={k}:{v}"
 
+            uri = str(uri).rstrip("&")
             uri += f'&index={"yes" if index else "no"}'
+            uri.replace("?&", "?")
 
             feat = QgsFeature()
             feat.setGeometry(g)
+            feat.initAttributes(len(columns))
+
+            if False:
+                for field_idx, attr in enumerate(columns.values()):
+                    feat.setAttribute(field_idx, attr)
+            else:
+                feat.setAttributes(list(columns.values()))
 
             sub_layer = QgsVectorLayer(uri, f"{layer_name}_{sub_type}", "memory")
             sub_layer.dataProvider().addFeatures([feat])
@@ -93,53 +107,31 @@ def add_qgis_single_feature_layer(
 
             qgis_instance_handle.qgis_project.addMapLayer(sub_layer, False)
             gm_group.insertLayer(0, sub_layer)
-    elif geom_type == GeoJsonGeometryTypesEnum.multi_point.value.__name__:
-        ...
-    elif geom_type == GeoJsonGeometryTypesEnum.multi_line_string.value.__name__:
-        ...
-    elif geom_type == GeoJsonGeometryTypesEnum.multi_polygon.value.__name__:
-        gm_group = qgis_instance_handle.temporary_group.addGroup(layer_name)
-
-        g = geom
-        uri = json.loads(g.asJson())["type"]
-        sub_type = uri  # TODO: URI MIGHT BE NONE?
-
-        if crs:
-            uri += f"?crs={crs}"
-
-        if fields:
-            for k, v in fields.items():
-                uri += f"&field={k}:{v}"
-
-        uri += f'&index={"yes" if index else "no"}'
-
-        sub_layer = QgsVectorLayer(uri, f"{layer_name}_{sub_type}", "memory")
-
-        features = []
-        for g_ in [g]:
-            feat = QgsFeature()
-            feat.setGeometry(g_)
-            features.append(feat)
-
-        sub_layer.dataProvider().addFeatures(features)
-
-        if SKIP_MEMORY_LAYER_CHECK_AT_CLOSE:
-            sub_layer.setCustomProperty("skipMemoryLayersCheck", 1)
-
-        qgis_instance_handle.qgis_project.addMapLayer(sub_layer, False)
-        gm_group.insertLayer(0, sub_layer)
     else:
+        uri += "?"
+
         if crs:
-            uri += f"?crs={crs}"
+            uri += f"crs={crs}"
 
         if fields:
+            uri = str(uri).rstrip("&")
             for k, v in fields.items():
                 uri += f"&field={k}:{v}"
 
+        uri = str(uri).rstrip("&")
         uri += f'&index={"yes" if index else "no"}'
+        uri.replace("?&", "?")
 
         feat = QgsFeature()
         feat.setGeometry(geom)
+
+        feat.initAttributes(len(columns))
+
+        if False:
+            for field_idx, attr in enumerate(columns.values()):
+                feat.setAttribute(field_idx, attr)
+        else:
+            feat.setAttributes(list(columns.values()))
 
         layer = QgsVectorLayer(uri, layer_name, "memory")
         layer.dataProvider().addFeatures([feat])
@@ -159,14 +151,48 @@ def add_qgis_single_geometry_layers(
         add_qgis_single_feature_layer(qgis_instance_handle, geom, name, **kwargs)
 
 
+def solve_type(d) -> str:
+    """
+    Does not support size/length yet...
+
+    :param d:
+    :return:
+    """
+    if isinstance(d, int):
+        return "integer"
+
+    elif isinstance(d, float):
+        return "double"
+
+    return "string"
+
+
 def add_qgis_multi_feature_layer(
     qgis_instance_handle: Any,
     geoms: Iterable,  # [QgsGeometry]
-    name: Optional[str] = None,
+    name: Optional[Iterable[str]] = None,
     crs: Optional[str] = None,
-    fields: Mapping[str, Any] = None,
+    columns: Optional[
+        Union[Mapping[str, Mapping[str, Any]], Iterable[Mapping[str, Any]]]
+    ] = None,
     index: bool = False,
 ) -> None:
+    """
+
+        fields  == column definition name, type, length/size
+        Multiple field parameters can be added to the data provider definition. type is one of “integer”, “double”, “string”.
+
+    An example url is “Point?crs=epsg:4326&field=id:integer&field=name:string(20)&index=yes”
+
+        :param qgis_instance_handle:
+        :param geoms:
+        :param name:
+        :param crs:
+        :param columns:
+        :param index:
+        :return:
+    """
+
     # noinspection PyUnresolvedReferences
     from qgis.core import QgsVectorLayer, QgsFeature
 
@@ -188,33 +214,73 @@ def add_qgis_multi_feature_layer(
     uri = None
     features = []
 
+    sample_row = None
+    num_cols = None
+    attr_generator = None
+    fields = None
+
+    if columns and len(columns):
+        if isinstance(columns, Mapping):
+            sample_row = next(iter(columns.values()))
+            # TODO: Might not be ordered correctly
+            # if isinstance(next(iter(columns.values())), Mapping):
+            #    ...
+            attr_generator = iter(columns.values())
+        elif isinstance(columns, Iterable):
+            sample_row = next(iter(columns))
+            # TODO: Might not be ordered correctly
+            # if isinstance(next(iter(columns.values())), Mapping):
+            #    ...
+            attr_generator = iter(columns)
+
+        assert isinstance(sample_row, Mapping)
+
+    if sample_row:
+        fields = {k: solve_type(v) for k, v in sample_row.items()}
+        num_cols = len(sample_row)
+
     for geom in geoms:
         geom_type_ = json.loads(geom.asJson())["type"]
+
         if geom_type is None:
             geom_type = geom_type_
             uri = geom_type  # TODO: URI MIGHT BE NONE?
 
-        assert geom_type_ == geom_type
+        if geom_type != geom_type_:
+            print(geom_type_, " is the not the same geometry type as ", geom_type)
+            # assert geom_type_ == geom_type, 'not the same geometry types'
+            return
 
         if geom_type == GeoJsonGeometryTypesEnum.geometry_collection.value.__name__:
             for g in geom.asGeometryCollection():  # TODO: Look into recursion?
+                sub_type = json.loads(g.asJson())["type"]
                 add_qgis_multi_feature_layer(
-                    qgis_instance_handle, g, f'{name}_{json.loads(g.asJson())["type"]}'
+                    qgis_instance_handle, g, f"{name}_{sub_type}"
                 )
             return
         else:
             feat = QgsFeature()
+
+            if sample_row:
+                feat.initAttributes(num_cols)
+                feat.setAttributes(list(next(attr_generator).values()))
+
             feat.setGeometry(geom)
             features.append(feat)
 
+    uri += "?"
+
     if crs:
-        uri += f"?crs={crs}"
+        uri += f"crs={crs}"
 
     if fields:
+        uri = str(uri).rstrip("&")
         for k, v in fields.items():
             uri += f"&field={k}:{v}"
 
+    uri = str(uri).rstrip("&")
     uri += f'&index={"yes" if index else "no"}'
+    uri.replace("?&", "?")
 
     layer = QgsVectorLayer(uri, layer_name, "memory")
     layer.dataProvider().addFeatures(features)

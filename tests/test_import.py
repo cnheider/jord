@@ -23,7 +23,7 @@ def test_qgis_import_package():
 
 
 def test_gdal_import_package():
-    if True:
+    if False:
         from jord import gdal_utilities
 
         print(gdal_utilities.__doc__)

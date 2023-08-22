@@ -15,3 +15,4 @@ with open(Path(__file__).parent / "README.md", "r") as this_init_file:
 
 from .degrees_of_freedom import *
 from .tracing import *
+from .center_line import *
