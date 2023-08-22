@@ -14,7 +14,7 @@ from apppath import AppPath
 
 __project__ = "Jord"
 __author__ = "Christian Heider Nielsen"
-__version__ = "0.1.4"
+__version__ = "0.1.5"
 __doc__ = r"""
 .. module:: jord
    :platform: Unix, Windows
