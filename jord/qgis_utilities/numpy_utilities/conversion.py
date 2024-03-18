@@ -5,7 +5,7 @@ from qgis.core import QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsP
 __all__ = ["get_qimage_from_numpy"]
 
 
-def get_qimage_from_numpy(img, debug=False)->QtGui.QImage:
+def get_qimage_from_numpy(img, debug=False) -> QtGui.QImage:
     # if isinstance(img, Image):
     #    img = img.data
     # if isinstance(img, numpy.ndarray):
@@ -24,7 +24,7 @@ def get_qimage_from_numpy(img, debug=False)->QtGui.QImage:
     return QtGui.QImage(img, width, height, bytes_per_line, QtGui.QImage.Format_RGB888)
 
 
-def transform_coordinates(coordinates, fromCRS, toCRS)->list:
+def transform_coordinates(coordinates, fromCRS, toCRS) -> list:
     """
 
     function to transform a set of coordinates from one CRS to another"""
@@ -49,7 +49,7 @@ def transform_coordinates(coordinates, fromCRS, toCRS)->list:
     ]  # transform the QgsPoint objects back to a list of coordinates
 
 
-def get_coordinates_of_layer_extent(layer)->list:
+def get_coordinates_of_layer_extent(layer) -> list:
     """
 
     function to get coordinates of a layer extent
