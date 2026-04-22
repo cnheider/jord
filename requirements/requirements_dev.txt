@@ -1,5 +1,5 @@
 pip>=22.1.2
-wheel>=0.33.0
+wheel>=0.47.0
 twine>=1.13.0
 pytest>=4.3.0
 pytest-cov>=2.11.1
