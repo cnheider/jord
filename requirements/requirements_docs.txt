@@ -1,4 +1,4 @@
-sphinx>=4.0.1
+sphinx>=7.4.7
 #m2r2
 sphinxcontrib-programoutput
 #mistune==0.8.4
